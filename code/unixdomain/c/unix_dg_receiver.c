@@ -17,14 +17,19 @@ int main(int argc, char **argv)
     struct sockaddr_un servaddr;
     char message[BUF_SIZE];
 
+    const char *servpath = UNIXDG_PATH;
+    if (argc == 2) {
+        servpath = argv[1];
+    }
+
     sockfd = socket(AF_LOCAL, SOCK_DGRAM, 0);
     if (sockfd < 0)
         error_handling("socket() error");
 
-    unlink(UNIXDG_PATH);
+    unlink(servpath);
     memset(&servaddr, 0, sizeof(servaddr));
     servaddr.sun_family = AF_LOCAL;
-    strcpy(servaddr.sun_path, UNIXDG_PATH);
+    strcpy(servaddr.sun_path, servpath);
 
     if (bind(sockfd, (struct sockaddr *) &servaddr, sizeof(servaddr)) < 0)
         error_handling("bind() error");
