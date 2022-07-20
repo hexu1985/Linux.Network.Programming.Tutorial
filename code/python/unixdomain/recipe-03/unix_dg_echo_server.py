@@ -4,6 +4,7 @@
 
 import socket
 import os
+import sys
 
 SERVER_PATH = "/tmp/python_unix_socket_server"
  
@@ -20,8 +21,6 @@ def run_unix_domain_socket_server():
         datagram, address = server.recvfrom( 1024 )
         if not datagram:
             break
-        elif "DONE" == datagram.decode('ascii'):
-            break
         else:
             print("-" * 20)
             print(datagram.decode('ascii'))
@@ -33,4 +32,6 @@ def run_unix_domain_socket_server():
     print("Server shutdown and path removed.")
 
 if __name__ == '__main__':
+    if len(sys.argv) == 2:
+        SERVER_PATH = sys.argv[1]
     run_unix_domain_socket_server()

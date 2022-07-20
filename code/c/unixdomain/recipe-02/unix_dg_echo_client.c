@@ -17,6 +17,11 @@ int main(int argc, char **argv)
     struct sockaddr_un cliaddr, servaddr;
     char message[BUF_SIZE];
 
+    const char *servpath = UNIXDG_PATH;
+    if (argc == 2) {
+        servpath = argv[1];
+    }
+
     sockfd = socket(AF_LOCAL, SOCK_DGRAM, 0);
     if (sockfd < 0)
         error_handling("socket() error");
@@ -30,7 +35,7 @@ int main(int argc, char **argv)
 
     memset(&servaddr, 0, sizeof(servaddr));    /* fill in server's address */
     servaddr.sun_family = AF_LOCAL;
-    strcpy(servaddr.sun_path, UNIXDG_PATH);
+    strcpy(servaddr.sun_path, servpath);
 
     while(1)
     {
@@ -46,6 +51,7 @@ int main(int argc, char **argv)
         printf("Message from server: %s", message);
     }
     close(sockfd);
+    unlink(cliaddr.sun_path);
     return 0;
 }
 
