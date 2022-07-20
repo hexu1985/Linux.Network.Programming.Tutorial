@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <errno.h>
 
-#include "err_exit.h"
+#include "error_handling.h"
 
 #ifndef	INADDR_NONE
 #define	INADDR_NONE	0xffffffff
@@ -43,17 +43,17 @@ static int sock_connect(const char *host, const char *service, const char *trans
 	if ( pse = getservbyname(service, transport) )
 		sin.sin_port = pse->s_port;
 	else if ((sin.sin_port=htons((unsigned short)atoi(service))) == 0)
-		err_exit("can't get \"%s\" service entry\n", service);
+		error_handling("can't get \"%s\" service entry\n", service);
 
     /* Map host name to IP address, allowing for dotted decimal */
 	if ( phe = gethostbyname(host) )
 		memcpy(&sin.sin_addr, phe->h_addr, phe->h_length);
 	else if ( (sin.sin_addr.s_addr = inet_addr(host)) == INADDR_NONE )
-		err_exit("can't get \"%s\" host entry\n", host);
+		error_handling("can't get \"%s\" host entry\n", host);
 
     /* Map transport protocol name to protocol number */
 	if ( (ppe = getprotobyname(transport)) == 0)
-		err_exit("can't get \"%s\" protocol entry\n", transport);
+		error_handling("can't get \"%s\" protocol entry\n", transport);
 
     /* Use protocol to choose a socket type */
 	if (strcmp(transport, "udp") == 0)
@@ -64,11 +64,11 @@ static int sock_connect(const char *host, const char *service, const char *trans
     /* Allocate a socket */
 	s = socket(PF_INET, type, ppe->p_proto);
 	if (s < 0)
-		err_exit("can't create socket: %s\n", strerror(errno));
+		error_handling("can't create socket: %s\n", strerror(errno));
 
     /* Connect the socket */
 	if (connect(s, (struct sockaddr *)&sin, sizeof(sin)) < 0)
-		err_exit("can't connect to %s.%s: %s\n", host, service,
+		error_handling("can't connect to %s.%s: %s\n", host, service,
 			strerror(errno));
 	return s;
 }

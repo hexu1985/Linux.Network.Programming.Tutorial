@@ -5,10 +5,10 @@
 #include <stdlib.h>
 
 /*------------------------------------------------------------------------
- * err_exit - print an error message and exit
+ * error_handling - print an error message and exit
  *------------------------------------------------------------------------
  */
-static int err_exit(const char *format, ...)
+static int error_handling(const char *format, ...)
 {
 	va_list	args;
 

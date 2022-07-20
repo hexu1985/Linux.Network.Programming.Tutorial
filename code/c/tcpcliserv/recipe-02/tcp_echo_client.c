@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <errno.h>
 
-#include "err_exit.h"
+#include "error_handling.h"
 #include "tcp_connect.h"
 
 #define	LINELEN		128
@@ -61,7 +61,7 @@ void tcp_echo_client(const char *host, const char *service)
 		for (inchars = 0; inchars < outchars; inchars+=n ) {
 			n = read(s, &buf[inchars], outchars - inchars);
 			if (n < 0)
-				err_exit("socket read failed: %s\n",
+				error_handling("socket read failed: %s\n",
 					strerror(errno));
 		}
 		fputs(buf, stdout);

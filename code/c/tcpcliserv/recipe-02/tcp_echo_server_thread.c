@@ -15,7 +15,7 @@
 #include <sys/errno.h>
 #include <netinet/in.h>
 
-#include "err_exit.h"
+#include "error_handling.h"
 #include "tcp_passive.h"
 
 #define	QLEN		  32	/* maximum connection queue length	*/
@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
 		service = argv[1];
 		break;
 	default:
-		err_exit("usage: tcp_echo_server [port]\n");
+		error_handling("usage: tcp_echo_server [port]\n");
 	}
 
 	msock = tcp_passive(service, QLEN);
@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
 	(void) pthread_mutex_init(&stats.st_mutex, 0);
 
 	if (pthread_create(&th, &ta, (void * (*)(void *))prstats, 0) < 0)
-		err_exit("pthread_create(prstats): %s\n", strerror(errno));
+		error_handling("pthread_create(prstats): %s\n", strerror(errno));
 
 	while (1) {
 		alen = sizeof(fsin);
@@ -73,11 +73,11 @@ int main(int argc, char *argv[])
 		if (ssock < 0) {
 			if (errno == EINTR)
 				continue;
-			err_exit("accept: %s\n", strerror(errno));
+			error_handling("accept: %s\n", strerror(errno));
 		}
 		if (pthread_create(&th, &ta, (void * (*)(void *))tcp_echo_server,
 		    (void *)ssock) < 0)
-			err_exit("pthread_create: %s\n", strerror(errno));
+			error_handling("pthread_create: %s\n", strerror(errno));
 	}
 }
 
@@ -97,9 +97,9 @@ int tcp_echo_server(int fd)
 	(void) pthread_mutex_unlock(&stats.st_mutex);
 	while (cc = read(fd, buf, sizeof buf)) {
 		if (cc < 0)
-			err_exit("echo read: %s\n", strerror(errno));
+			error_handling("echo read: %s\n", strerror(errno));
 		if (write(fd, buf, cc) < 0)
-			err_exit("echo write: %s\n", strerror(errno));
+			error_handling("echo write: %s\n", strerror(errno));
 		(void) pthread_mutex_lock(&stats.st_mutex);
 		stats.st_bytecount += cc;
 		(void) pthread_mutex_unlock(&stats.st_mutex);

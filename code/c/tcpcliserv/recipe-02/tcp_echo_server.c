@@ -16,7 +16,7 @@
 #include <string.h>
 #include <errno.h>
 
-#include "err_exit.h"
+#include "error_handling.h"
 #include "tcp_passive.h"
 
 #define	QLEN		  32	/* maximum connection queue length	*/
@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
 		service = argv[1];
 		break;
 	default:
-		err_exit("usage: tcp_echo_server [port]\n");
+		error_handling("usage: tcp_echo_server [port]\n");
 	}
 
 	msock = tcp_passive(service, QLEN);
@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
 		if (ssock < 0) {
 			if (errno == EINTR)
 				continue;
-			err_exit("accept: %s\n", strerror(errno));
+			error_handling("accept: %s\n", strerror(errno));
 		}
 		switch (fork()) {
 		case 0:		/* child */
@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
 			(void) close(ssock);
 			break;
 		case -1:
-			err_exit("fork: %s\n", strerror(errno));
+			error_handling("fork: %s\n", strerror(errno));
 		}
 	}
 }
@@ -84,9 +84,9 @@ tcp_echo_server(int fd)
 
 	while (cc = read(fd, buf, sizeof buf)) {
 		if (cc < 0)
-			err_exit("echo read: %s\n", strerror(errno));
+			error_handling("echo read: %s\n", strerror(errno));
 		if (write(fd, buf, cc) < 0)
-			err_exit("echo write: %s\n", strerror(errno));
+			error_handling("echo write: %s\n", strerror(errno));
 	}
 	return 0;
 }

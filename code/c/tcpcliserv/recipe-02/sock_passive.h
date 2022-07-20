@@ -10,7 +10,7 @@
 #include <netdb.h>
 #include <errno.h>
 
-#include "err_exit.h"
+#include "error_handling.h"
 
 static unsigned short portbase = 0;	/* port base, for non-root servers	*/
 
@@ -40,11 +40,11 @@ static int sock_passive(const char *service, const char *transport, int qlen)
 		sin.sin_port = htons(ntohs((unsigned short)pse->s_port)
 			+ portbase);
 	else if ((sin.sin_port=htons((unsigned short)atoi(service))) == 0)
-		err_exit("can't get \"%s\" service entry\n", service);
+		error_handling("can't get \"%s\" service entry\n", service);
 
     /* Map protocol name to protocol number */
 	if ( (ppe = getprotobyname(transport)) == 0)
-		err_exit("can't get \"%s\" protocol entry\n", transport);
+		error_handling("can't get \"%s\" protocol entry\n", transport);
 
     /* Use protocol to choose a socket type */
 	if (strcmp(transport, "udp") == 0)
@@ -55,14 +55,14 @@ static int sock_passive(const char *service, const char *transport, int qlen)
     /* Allocate a socket */
 	s = socket(PF_INET, type, ppe->p_proto);
 	if (s < 0)
-		err_exit("can't create socket: %s\n", strerror(errno));
+		error_handling("can't create socket: %s\n", strerror(errno));
 
     /* Bind the socket */
 	if (bind(s, (struct sockaddr *)&sin, sizeof(sin)) < 0)
-		err_exit("can't bind to %s port: %s\n", service,
+		error_handling("can't bind to %s port: %s\n", service,
 			strerror(errno));
 	if (type == SOCK_STREAM && listen(s, qlen) < 0)
-		err_exit("can't listen on %s port: %s\n", service,
+		error_handling("can't listen on %s port: %s\n", service,
 			strerror(errno));
 	return s;
 }
