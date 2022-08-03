@@ -12,7 +12,7 @@
 #include "signal_handling.h"
 #include "string_server.h"
 
-#define QLEN          32    /* maximum connection queue length  */
+#define LISTENQ     1024    /* 2nd argument to listen() */
 
 int main(int argc, char **argv)
 {
@@ -39,7 +39,7 @@ int main(int argc, char **argv)
 	if (bind(listenfd, (struct sockaddr *)&servaddr, sizeof(servaddr)) < 0)
         error_handling("bind() error");
 
-	if (listen(listenfd, QLEN) < 0)
+	if (listen(listenfd, LISTENQ) < 0)
         error_handling("listen() error");
 
 	signal(SIGCHLD, signal_handling);
