@@ -1,9 +1,9 @@
 
 RM = rm -f
 CXX = g++
-CXXFLAGS = -Wall -g
-INCLUDES = 
-LDFLAGS = -lboost_thread -lboost_system -lpthread
+CXXFLAGS = -Wall -g -DASIO_STANDALONE
+INCLUDES = -I../../asio/include
+LDFLAGS = -lpthread
 LDPATH =
 
 SOURCES = $(shell ls *.cpp)

@@ -1,20 +1,18 @@
-#include <boost/asio.hpp>
+#include <asio.hpp>
 #include <iostream>
 #include <string>
 #include "error_handling.hpp"
 
-using namespace boost;
-
 int main(int argc, char *argv[])
 {
-	if (argc != 3)
+    if (argc != 3)
         error_handling("usage: %s <IPaddress> <Port>", argv[0]);
 
-	// Step 1. Assume that the client application has already
-	// obtained the IP address and protocol port number of the
-	// target server.
-	std::string raw_ip_address = argv[1];
-	unsigned short port_num = std::stoi(argv[2]);
+    // Step 1. Assume that the client application has already
+    // obtained the IP address and protocol port number of the
+    // target server.
+    std::string raw_ip_address = argv[1];
+    unsigned short port_num = std::stoi(argv[2]);
 
     // Step 2. Creating an endpoint designating 
     // a target server application.
@@ -28,5 +26,5 @@ int main(int argc, char *argv[])
     // Step 4. Connecting a socket.
     sock.connect(ep);
 
-	return 0;
+    return 0;
 }
