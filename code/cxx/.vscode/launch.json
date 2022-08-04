@@ -8,7 +8,7 @@
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/tcpcliserv/recipe-01/tcp_echo_client",
+            "program": "${workspaceFolder}/tcpcliserv/recipe-01/tcp_string_client",
             "args": ["127.0.0.1", "9999"],
             "stopAtEntry": true,
             "cwd": "${workspaceFolder}",

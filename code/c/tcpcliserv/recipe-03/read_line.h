@@ -11,7 +11,7 @@ static int	read_cnt;
 static char	*read_ptr;
 static char	read_buf[MAXLINE];
 
-static ssize_t read_any(int fd, char *ptr)
+static ssize_t read_char(int fd, char *ptr)
 {
 	if (read_cnt <= 0) {
 again:
@@ -36,7 +36,7 @@ static ssize_t read_line(int fd, void *vptr, size_t maxlen)
 
 	ptr = vptr;
 	for (n = 1; n < maxlen; n++) {
-		if ( (rc = read_any(fd, &c)) == 1) {
+		if ( (rc = read_char(fd, &c)) == 1) {
 			*ptr++ = c;
 			if (c == '\n')
 				break;	/* newline is stored, like fgets() */

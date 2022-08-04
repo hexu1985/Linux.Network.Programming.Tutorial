@@ -10,15 +10,16 @@
 
 static void string_server(int sockfd)
 {
-	ssize_t		n;
-	char		buf[MAXLINE];
+    ssize_t		n;
+    char		buf[MAXLINE];
 
 again:
-	while ( (n = read(sockfd, buf, MAXLINE)) > 0)
-		write_all(sockfd, buf, n);
+    while ( (n = read(sockfd, buf, MAXLINE)) > 0) {
+        write_all(sockfd, buf, n);
+    }
 
-	if (n < 0 && errno == EINTR)
-		goto again;
-	else if (n < 0)
-		error_handling("str_echo: read error");
+    if (n < 0 && errno == EINTR)
+        goto again;
+    else if (n < 0)
+        error_handling("str_echo: read error");
 }
