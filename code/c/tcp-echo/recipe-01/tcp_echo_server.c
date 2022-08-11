@@ -9,11 +9,9 @@
 
 #include "error_handling.h"
 
-#define BUFSIZ 128
-
 #define LISTENQ 5
 
-int	tcp_echo_server(int fd);
+int	echo_server(int fd);
 
 int main(int argc, char *argv[])
 {
@@ -47,7 +45,7 @@ int main(int argc, char *argv[])
         if(connfd < 0)
             error_handling("accept error");  
 
-        tcp_echo_server(connfd);
+        echo_server(connfd);
         close(connfd);
     }
 	
@@ -55,7 +53,7 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
-int tcp_echo_server(int fd)
+int echo_server(int fd)
 {
 	char buf[BUFSIZ];
 	int	cc;
