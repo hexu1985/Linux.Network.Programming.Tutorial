@@ -1,4 +1,4 @@
-/* TCPecho.c - main, TCPecho */
+/* tcp_echo_client.c - main, echo_client */
 
 #include <unistd.h>
 #include <stdlib.h>
@@ -11,7 +11,7 @@
 
 #define	LINELEN		128
 
-void tcp_echo_client(const char *host, const char *service);
+void echo_client(const char *host, const char *service);
 
 /*------------------------------------------------------------------------
  * main - TCP client for ECHO service
@@ -36,15 +36,15 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "usage: %s [host [port]]\n", argv[0]);
 		exit(1);
 	}
-	tcp_echo_client(host, service);
+	echo_client(host, service);
 	exit(0);
 }
 
 /*------------------------------------------------------------------------
- * TCPecho - send input to ECHO service on specified host and print reply
+ * tcp_echo_client - send input to ECHO service on specified host and print reply
  *------------------------------------------------------------------------
  */
-void tcp_echo_client(const char *host, const char *service)
+void echo_client(const char *host, const char *service)
 {
 	char	buf[LINELEN+1];		/* buffer for one line of text	*/
 	int	s, n;			/* socket descriptor, read count*/

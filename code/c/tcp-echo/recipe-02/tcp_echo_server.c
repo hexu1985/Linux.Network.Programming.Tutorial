@@ -1,4 +1,4 @@
-/* tcp_echo_server.c - main, tcp_echo_server */
+/* tcp_echo_server.c - main, echo_server */
 
 #define	_USE_BSD
 #include <sys/types.h>
@@ -23,7 +23,7 @@
 #define	BUFSIZE		4096
 
 void reaper(int);
-int	tcp_echo_server(int fd);
+int	echo_server(int fd);
 
 /*------------------------------------------------------------------------
  * main - Concurrent TCP server for ECHO service
@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
 		switch (fork()) {
 		case 0:		/* child */
 			(void) close(msock);
-			exit(tcp_echo_server(ssock));
+			exit(echo_server(ssock));
 		default:	/* parent */
 			(void) close(ssock);
 			break;
@@ -73,11 +73,11 @@ int main(int argc, char *argv[])
 }
 
 /*------------------------------------------------------------------------
- * tcp_echo_server - echo data until end of file
+ * echo_server - echo data until end of file
  *------------------------------------------------------------------------
  */
 int
-tcp_echo_server(int fd)
+echo_server(int fd)
 {
 	char	buf[BUFSIZ];
 	int	cc;

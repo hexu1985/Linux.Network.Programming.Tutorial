@@ -1,4 +1,4 @@
-/* TCPmtechod.c - main, tcp_echo_server, prstats */
+/* TCPmtechod.c - main, echo_server, prstats */
 
 #include <unistd.h>
 #include <stdlib.h>
@@ -32,7 +32,7 @@ struct {
 } stats;
 
 void prstats(void);
-int	tcp_echo_server(int fd);
+int	echo_server(int fd);
 
 /*------------------------------------------------------------------------
  * main - Concurrent TCP server for ECHO service
@@ -75,17 +75,17 @@ int main(int argc, char *argv[])
 				continue;
 			error_handling("accept: %s\n", strerror(errno));
 		}
-		if (pthread_create(&th, &ta, (void * (*)(void *))tcp_echo_server,
+		if (pthread_create(&th, &ta, (void * (*)(void *))echo_server,
 		    (void *)ssock) < 0)
 			error_handling("pthread_create: %s\n", strerror(errno));
 	}
 }
 
 /*------------------------------------------------------------------------
- * tcp_echo_server - echo data until end of file
+ * echo_server - echo data until end of file
  *------------------------------------------------------------------------
  */
-int tcp_echo_server(int fd)
+int echo_server(int fd)
 {
 	time_t	start;
 	char	buf[BUFSIZ];
