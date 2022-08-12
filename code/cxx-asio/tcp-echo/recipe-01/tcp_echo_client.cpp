@@ -15,7 +15,7 @@ static std::string read_line(asio::ip::tcp::socket& sock)
     return response;
 }
 
-static void string_client(std::istream& in, asio::ip::tcp::socket& sock)
+static void echo_client(std::istream& in, asio::ip::tcp::socket& sock)
 {
     std::string sendline, recvline;
 
@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
     sock.connect(ep);
 
     // Step 5. Send and receive message with socket.
-    string_client(std::cin, sock);
+    echo_client(std::cin, sock);
 
     return 0;
 }
