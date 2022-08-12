@@ -5,7 +5,7 @@
 #include <sys/socket.h>
 
 #include "error_handling.h"
-#include "string_client.h"
+#include "echo_client.h"
 
 int
 main(int argc, char **argv)
@@ -31,10 +31,10 @@ main(int argc, char **argv)
 	if (inet_pton(AF_INET, serv_ip, &servaddr.sin_addr) < 0)
         error_handling("inet_pton() error for %s", serv_ip);
 
-	if (connect(sockfd, (struct sockaddr *)&servaddr, sizeof(servaddr)) < 0)
+	if (connect(sockfd, (struct sockaddr *) &servaddr, sizeof (servaddr)) < 0)
         error_handling("connect() error");
 
-	string_client(stdin, sockfd);		/* do it all */
+	echo_client(stdin, sockfd);		/* do it all */
 
     return 0;
 }

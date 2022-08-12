@@ -10,7 +10,7 @@
 
 #include "error_handling.h"
 #include "signal_handling.h"
-#include "string_server.h"
+#include "echo_server.h"
 
 #define LISTENQ     1024    /* 2nd argument to listen() */
 
@@ -56,7 +56,7 @@ int main(int argc, char **argv)
 		switch (fork()) {
 		case 0:		/* child process */
 			close(listenfd);	    /* close listening socket */
-			string_server(connfd);	/* process the request */
+			echo_server(connfd);	/* process the request */
 			exit(0);
 		default:	/* parent */
             close(connfd);			/* parent closes connected socket */

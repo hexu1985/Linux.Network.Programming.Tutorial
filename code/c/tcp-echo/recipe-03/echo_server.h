@@ -8,7 +8,7 @@
 #define	MAXLINE 1024
 #endif
 
-static void string_server(int sockfd)
+static void echo_server(int sockfd)
 {
     ssize_t		n;
     char		buf[MAXLINE];

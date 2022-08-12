@@ -9,7 +9,7 @@
 #define	MAXLINE 1024
 #endif
 
-static void string_client(FILE *fp, int sockfd)
+static void echo_client(FILE *fp, int sockfd)
 {
 	char sendline[MAXLINE], recvline[MAXLINE];
 
