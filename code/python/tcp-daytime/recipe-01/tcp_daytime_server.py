@@ -10,15 +10,15 @@ import time
 
 backlog = 5 
 
-def tcp_daytime_server(port):
+def tcp_daytime_server(host, port):
     """ A simple echo server """
     # Create a TCP socket
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     # Enable reuse address/port 
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     # Bind the socket to the port
-    server_address = ('', port)
-    print("Starting up echo server on port %s" % port)
+    server_address = (host, port)
+    print("Starting up echo server on %s port %s" % server_address)
     sock.bind(server_address)
     # Listen to clients, backlog argument specifies the max no. of queued connections
     sock.listen(backlog) 
@@ -33,7 +33,9 @@ def tcp_daytime_server(port):
    
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Socket Server Example')
+    parser.add_argument('--host', action="store", dest="host", type=str, default="")
     parser.add_argument('--port', action="store", dest="port", type=int, required=True)
     given_args = parser.parse_args() 
+    host = given_args.host
     port = given_args.port
-    tcp_daytime_server(port)
+    tcp_daytime_server(host, port)
