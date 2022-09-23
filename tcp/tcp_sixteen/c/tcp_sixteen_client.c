@@ -1,8 +1,19 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "wrapsock.h"
+
+void Sendall(int sockfd, const char *str)
+{
+    Writen(sockfd, str, strlen(str));
+}
+
+void Recvall(int sockfd, char *buf, int n)
+{
+    Readn(sockfd, buf, n);
+}
 
 void client(const char *host, uint16_t port)
 {
@@ -25,14 +36,12 @@ void client(const char *host, uint16_t port)
     printf("Client has been assigned socket name (%s)\n", 
             Sock_ntop((struct sockaddr *) &cliaddr, len));
 
-#if 0
-    Sendall("Hi there, server");
+    Sendall(sockfd, "Hi there, server");
     Recvall(sockfd, reply, 16);
 
     printf("The server said %s\n", reply);
 
     Close(sockfd);
-#endif
 }
 
 int main(int argc, char *argv[])
