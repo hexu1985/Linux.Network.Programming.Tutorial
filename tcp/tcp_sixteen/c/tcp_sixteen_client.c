@@ -19,7 +19,7 @@ void client(const char *host, uint16_t port)
 {
     int sockfd;
     socklen_t len;
-    struct sockaddr_in cliaddr, servaddr;
+    struct sockaddr_in myaddr, servaddr;
     char reply[128];
 
     sockfd = Socket(AF_INET, SOCK_STREAM, 0);
@@ -31,10 +31,10 @@ void client(const char *host, uint16_t port)
 
     Connect(sockfd, (struct sockaddr *) &servaddr, sizeof(servaddr));
 
-    len = sizeof(cliaddr);
-    Getsockname(sockfd, (struct sockaddr *) &cliaddr, &len);
+    len = sizeof(myaddr);
+    Getsockname(sockfd, (struct sockaddr *) &myaddr, &len);
     printf("Client has been assigned socket name (%s)\n", 
-            Sock_ntop((struct sockaddr *) &cliaddr, len));
+            Sock_ntop((struct sockaddr *) &myaddr, len));
 
     Sendall(sockfd, "Hi there, server");
     Recvall(sockfd, reply, 16);
