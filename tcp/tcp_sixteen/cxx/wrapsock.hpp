@@ -30,3 +30,36 @@ private:
     socklen_t addrlen = 0;
 };
 
+// ======
+// Socket
+// ======
+//
+class Socket {
+public:
+    Socket(int family, int type, int protocol=0);
+
+    ~Socket();
+
+    Socket(const Socket&) = delete;
+    Socket& operator=(const Socket&) = delete;
+
+    Socket(Socket&& x);
+    Socket& operator=(Socket&& x);
+
+    void Connect(const char* host, uint16_t port);
+    void Connect(const SocketAddress &sock_addr);
+
+    void Bind(const char* host, uint16_t port);
+    void Bind(const SocketAddress &sock_addr);
+
+    void Listen(int backlog);
+
+    std::tuple<Socket, SocketAddress> Accept();
+
+    int GetDescriptor() { return sockfd; }
+    int GetFamily() { return family; }
+
+private:
+    int sockfd = -1;
+    int family;
+};

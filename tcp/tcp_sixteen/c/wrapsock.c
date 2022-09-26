@@ -112,11 +112,11 @@ Sock_ntop(const struct sockaddr *addr, socklen_t addrlen)
 }
 
 int 
-Socket(int domain, int type, int protocol)
+Socket(int family, int type, int protocol)
 {
     int n;
 
-    if ((n = socket(domain, type, protocol)) < 0)
+    if ((n = socket(family, type, protocol)) < 0)
         err_sys("socket error");
     return(n);
 }
