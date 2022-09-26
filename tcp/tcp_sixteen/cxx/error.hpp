@@ -5,7 +5,7 @@
 #include <stdexcept>
 #include <system_error>
 
-std::string error_message(const char* file, int line, const char* format, ...);
+std::string error_message(const char* file, unsigned int line, const char* format, ...);
 
 #define ThrowRuntimeError(format, ...) \
     throw std::runtime_error(error_message(__FILE__, __LINE__, format, __VA_ARGS__))

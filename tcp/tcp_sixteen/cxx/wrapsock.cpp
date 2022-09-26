@@ -1,5 +1,7 @@
 #include "wrapsock.hpp"
 
+#include <unistd.h>
+
 #include <cstring>
 #include <cassert>
 
@@ -12,7 +14,6 @@
 // SocketAddress
 // =============
 //
-
 SocketAddress::SocketAddress(int family, const char* host, uint16_t port) {
     switch (family) {
     case AF_INET: {
@@ -59,5 +60,23 @@ SocketAddress& SocketAddress::operator=(SocketAddress&& x) {
     using std::swap;
     swap(addr, x.addr);
     swap(addrlen, x.addrlen);
+
+    return *this;
 }
 
+
+// ======
+// Socket
+// ======
+//
+Socket::Socket(int family_, int type, int protocol): family(family_) {
+    sockfd = socket(family, type, protocol);
+    if (sockfd < 0) 
+        ThrowSystemError("Socket(%d, %d, %d) error", family, type, protocol);
+}
+
+Socket::~Socket() {
+    if (sockfd >= 0) {
+        close(sockfd);
+    }
+}
