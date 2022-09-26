@@ -5,7 +5,7 @@
 
 void client(const std::string& host, uint16_t port) {
     Socket sock(AF_INET, SOCK_STREAM);
-//    sock.Connect(host, port);
+    sock.Connect(host.c_str(), port);
 }
 
 int main(int argc, char *argv[])

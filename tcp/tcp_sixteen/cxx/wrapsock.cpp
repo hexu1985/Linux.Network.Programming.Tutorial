@@ -6,6 +6,7 @@
 #include <cassert>
 
 #include <utility>
+#include <sstream>
 
 #include "error.hpp"
 
@@ -17,16 +18,16 @@
 SocketAddress::SocketAddress(int family, const char* host, uint16_t port) {
     switch (family) {
     case AF_INET: {
-        auto addr_in = new struct sockaddr_in;
-        memset(addr_in, 0x0, sizeof(*addr_in));
-        addr_in->sin_family = AF_INET;
-        addr_in->sin_port = htons(port);
-        int n = inet_pton(AF_INET, host, &addr_in->sin_addr); 
+        auto sin = new struct sockaddr_in;
+        memset(sin, 0x0, sizeof(*sin));
+        sin->sin_family = AF_INET;
+        sin->sin_port = htons(port);
+        int n = inet_pton(AF_INET, host, &sin->sin_addr); 
         if (n < 0) ThrowSystemError("SocketAddress(%d, %s, %d), inet_pton error",family, host, port);
         if (n == 0) ThrowRuntimeError("SocketAddress(%d, %s, %d), inet_pton error: Not in presentation format", family, host, port);
 
-        addr = reinterpret_cast<struct sockaddr*>(addr_in);
-        addrlen = sizeof(*addr_in);
+        addr = reinterpret_cast<struct sockaddr*>(sin);
+        addrlen = sizeof(*sin);
         break;
     }
     default:
@@ -40,8 +41,8 @@ SocketAddress::~SocketAddress() {
 
     switch (addr->sa_family) {
     case AF_INET: {
-        auto addr_in = reinterpret_cast<struct sockaddr_in*>(addr);
-        delete addr_in;
+        auto sin = reinterpret_cast<struct sockaddr_in*>(addr);
+        delete sin;
     }
     default:
         assert(false && "invalid family type");
@@ -64,6 +65,31 @@ SocketAddress& SocketAddress::operator=(SocketAddress&& x) {
     return *this;
 }
 
+std::string SocketAddress::ToString() const {
+    if (addr == nullptr)
+        ThrowRuntimeError("ToString() error: addr is nullptr", "");
+
+    switch (addr->sa_family) {
+    case AF_INET: {
+        struct sockaddr_in *sin = (struct sockaddr_in *) addr;
+
+        char str[128];
+        if (inet_ntop(AF_INET, &sin->sin_addr, str, sizeof(str)) == NULL) {
+            ThrowSystemError("ToString() error: AF_xxx: %d, len %d", addr->sa_family, addrlen);
+        }
+        std::ostringstream os;
+        os << str;
+        if (ntohs(sin->sin_port) != 0) {
+            os << ":" << ntohs(sin->sin_port);
+        }
+        return os.str();
+    }
+
+    default:
+        PrintRuntimeError("ToString() error: unknown AF_xxx: %d, len %d", addr->sa_family, addrlen);
+        return "unknown";
+    }
+}
 
 // ======
 // Socket
@@ -80,3 +106,18 @@ Socket::~Socket() {
         close(sockfd);
     }
 }
+
+void Socket::Connect(const char* host, uint16_t port) {
+    SocketAddress sock_addr(family, host, port);
+    Connect(sock_addr);
+}
+
+void Socket::Connect(const SocketAddress &sock_addr) {
+    auto addr = sock_addr.GetAddrPtr();
+    auto addrlen = *sock_addr.GetAddrLenPtr();
+    if (connect(sockfd, addr, addrlen) < 0) {
+        auto addr_str = sock_addr.ToString();
+        ThrowSystemError("Connect(%s) error", addr_str.c_str());
+    }
+}
+

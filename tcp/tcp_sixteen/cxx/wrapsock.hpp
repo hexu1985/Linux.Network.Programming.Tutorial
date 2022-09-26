@@ -22,8 +22,13 @@ public:
     SocketAddress(SocketAddress&& x);
     SocketAddress& operator=(SocketAddress&& x);
 
+    std::string ToString() const;
+
     struct sockaddr* GetAddrPtr() { return addr; }
+    const struct sockaddr* GetAddrPtr() const { return addr; }
+
     socklen_t* GetAddrLenPtr() { return &addrlen; }
+    const socklen_t* GetAddrLenPtr() const { return &addrlen; }
 
 private:
     sockaddr* addr = nullptr;
