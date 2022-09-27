@@ -12,6 +12,7 @@
 //
 class SocketAddress {
 public:
+    SocketAddress(int family, uint16_t port=0);
     SocketAddress(int family, const char* host, uint16_t port);
 
     ~SocketAddress();
@@ -60,6 +61,8 @@ public:
     void Listen(int backlog);
 
     std::tuple<Socket, SocketAddress> Accept();
+
+    SocketAddress Getsockname();
 
     int GetDescriptor() { return sockfd; }
     int GetFamily() { return family; }

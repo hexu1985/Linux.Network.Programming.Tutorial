@@ -15,16 +15,41 @@
 // SocketAddress
 // =============
 //
-SocketAddress::SocketAddress(int family, const char* host, uint16_t port) {
+SocketAddress::SocketAddress(int family, uint16_t port) {
     switch (family) {
     case AF_INET: {
         auto sin = new struct sockaddr_in;
         memset(sin, 0x0, sizeof(*sin));
         sin->sin_family = AF_INET;
         sin->sin_port = htons(port);
+        sin->sin_addr.s_addr = htonl(INADDR_ANY);
+
+        addr = reinterpret_cast<struct sockaddr*>(sin);
+        addrlen = sizeof(*sin);
+        break;
+    }
+    default:
+        ThrowRuntimeError("SocketAddress(%d) error: unsupport family type", family);
+    }
+}
+
+SocketAddress::SocketAddress(int family, const char* host, uint16_t port) {
+    switch (family) {
+    case AF_INET: {
+        if (host == nullptr || host[0] == '\0') host = "0.0.0.0";
+
+        auto sin = new struct sockaddr_in;
+        memset(sin, 0x0, sizeof(*sin));
+        sin->sin_family = AF_INET;
+        sin->sin_port = htons(port);
+
         int n = inet_pton(AF_INET, host, &sin->sin_addr); 
-        if (n < 0) ThrowSystemError("SocketAddress(%d, %s, %d), inet_pton error",family, host, port);
-        if (n == 0) ThrowRuntimeError("SocketAddress(%d, %s, %d), inet_pton error: Not in presentation format", family, host, port);
+        if (n < 0) {
+            ThrowSystemError("SocketAddress(%d, %s, %d), inet_pton error", family, host, port);
+        }
+        if (n == 0) {
+            ThrowRuntimeError("SocketAddress(%d, %s, %d), inet_pton error: Not in presentation format", family, host, port);
+        }
 
         addr = reinterpret_cast<struct sockaddr*>(sin);
         addrlen = sizeof(*sin);
@@ -43,6 +68,7 @@ SocketAddress::~SocketAddress() {
     case AF_INET: {
         auto sin = reinterpret_cast<struct sockaddr_in*>(addr);
         delete sin;
+        break;
     }
     default:
         assert(false && "invalid family type");
@@ -119,5 +145,15 @@ void Socket::Connect(const SocketAddress &sock_addr) {
         auto addr_str = sock_addr.ToString();
         ThrowSystemError("Connect(%s) error", addr_str.c_str());
     }
+}
+
+SocketAddress Socket::Getsockname() {
+    SocketAddress sock_addr(family);
+    auto addr = sock_addr.GetAddrPtr();
+    auto addrlen = sock_addr.GetAddrLenPtr();
+    if (getsockname(sockfd, addr, addrlen) < 0) {
+        ThrowSystemError("Getsockname error");
+    }
+    return sock_addr;
 }
 
