@@ -24,13 +24,13 @@ public:
     SocketAddress(SocketAddress&& x);
     SocketAddress& operator=(SocketAddress&& x);
 
-    std::string ToString() const;
-
     struct sockaddr* GetAddrPtr() { return addr; }
     const struct sockaddr* GetAddrPtr() const { return addr; }
 
     socklen_t* GetAddrLenPtr() { return &addrlen; }
     const socklen_t* GetAddrLenPtr() const { return &addrlen; }
+
+    std::string ToString() const;
 
 private:
     sockaddr* addr = nullptr;
@@ -53,29 +53,31 @@ public:
     Socket(Socket&& x);
     Socket& operator=(Socket&& x);
 
-    void Connect(const char* host, uint16_t port);
-    void Connect(const SocketAddress &sock_addr);
+    std::tuple<Socket, SocketAddress> Accept();
 
     void Bind(const char* host, uint16_t port);
     void Bind(const SocketAddress &sock_addr);
 
-    void Listen(int backlog);
-
-    std::tuple<Socket, SocketAddress> Accept();
-
-    SocketAddress Getsockname();
-
-    void SendAll(const std::string& data);
-    void SendAll(const void *ptr, size_t nbytes);
-
-    int Recv(void *ptr, size_t nbytes, int flags, std::error_code& ec);
-    int Recv(void *ptr, size_t nbytes, int flags=0);
-    std::string Recv(size_t nbytes, int flags=0);
-
     void Close();
+
+    void Connect(const char* host, uint16_t port);
+    void Connect(const SocketAddress &sock_addr);
 
     int GetDescriptor() { return sockfd; }
     int GetFamily() { return family; }
+
+    SocketAddress Getsockname();
+
+    void Listen(int backlog);
+
+    int Recv(void *buf, size_t len, int flags, std::error_code& ec);
+    std::string Recv(size_t len, int flags=0);
+
+    int Send(const void *buf, size_t len, int flags, std::error_code& ec);
+    void Send(const std::string& buf, int flags=0);
+
+    int SendAll(const void *buf, size_t len, int flags, std::error_code& ec);
+    void SendAll(const std::string& buf, int flags=0);
 
 private:
     int sockfd = -1;

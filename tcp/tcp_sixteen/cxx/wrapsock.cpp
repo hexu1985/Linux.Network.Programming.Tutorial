@@ -134,6 +134,12 @@ Socket::~Socket() {
     }
 }
 
+void Socket::Close() {
+    if (close(sockfd) < 0)
+        ThrowSystemError("Close() error");
+    sockfd = -1;
+}
+
 void Socket::Connect(const char* host, uint16_t port) {
     SocketAddress sock_addr(family, host, port);
     Connect(sock_addr);
@@ -158,32 +164,73 @@ SocketAddress Socket::Getsockname() {
     return sock_addr;
 }
 
-int Socket::Recv(void *ptr, size_t nbytes, int flags, std::error_code& ec) {
-    ssize_t n = recv(sockfd, ptr, nbytes, flags);
+int Socket::Recv(void *buf, size_t len, int flags, std::error_code& ec) {
+    ssize_t n = recv(sockfd, buf, len, flags);
     if (n < 0) {
         ec.assign(errno, std::system_category());
     }
     return n;
 }
 
-int Socket::Recv(void *ptr, size_t nbytes, int flags) {
-    ssize_t n = recv(sockfd, ptr, nbytes, flags);
-    if (n < 0) {
-        ThrowSystemError("Recv() error");
-    }
-    return n;
-}
-
-std::string Socket::Recv(size_t nbytes, int flags) {
+std::string Socket::Recv(size_t len, int flags) {
     std::string buf;
-    buf.resize(nbytes);
-    auto n = Recv(buf.data(), buf.size(), flags);
+    buf.resize(len);
+    std::error_code ec;
+    int n = Recv(buf.data(), buf.length(), flags, ec);
+    if (ec) {
+        ThrowSystemErrorWithCode(ec, "Recv() error");
+    }
     buf.resize(n);
     return buf;
 }
 
-void Socket::Close() {
-    if (close(sockfd) < 0)
-        ThrowSystemError("Close() error");
-    sockfd = -1;
+int Socket::Send(const void *buf, size_t len, int flags, std::error_code& ec) {
+    ssize_t n = send(sockfd, buf, len, flags);
+    if (n < 0) {
+        ec.assign(errno, std::system_category());
+    }
+    return n;
 }
+
+void Socket::Send(const std::string& buf, int flags) {
+    std::error_code ec;
+    int n = Send(buf.data(), buf.length(), flags, ec);
+    if (ec) {
+        ThrowSystemErrorWithCode(ec, "Send() error");
+    }
+    if (n != buf.length()) {
+        ThrowRuntimeError("Send() error: uncompleted send, "
+                "%d bytes expected, %d bytes in fact",
+                n, buf.length());
+    }
+}
+
+int Socket::SendAll(const void *buf, size_t len, int flags, std::error_code& ec) {
+    auto ptr = static_cast<const char*>(buf);
+    auto nleft = len;
+    ec.clear();
+    while (nleft > 0) {
+        auto n = Send(ptr, nleft, flags, ec);
+        if (ec) {
+            if (ec == std::errc::interrupted) {
+                ec.clear();
+                n = 0;
+            }
+            return len-nleft;
+        }
+
+        nleft -= n;
+        ptr += n;
+    }
+    return len;
+}
+
+void Socket::SendAll(const std::string& buf, int flags) {
+    std::error_code ec;
+    int n = SendAll(buf.data(), buf.length(), flags, ec);
+    if (ec) {
+        ThrowSystemErrorWithCode(ec, "Send() error");
+    }
+    assert(n == buf.length());
+}
+

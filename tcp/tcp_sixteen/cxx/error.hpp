@@ -15,6 +15,10 @@ std::string error_message(const char* file, unsigned int line, const char* forma
     throw std::system_error(errno, std::system_category(), \
             error_message(__FILE__, __LINE__, __VA_ARGS__))
 
+#define ThrowSystemErrorWithCode(error_code, ...) \
+    throw std::system_error(error_code, \
+            error_message(__FILE__, __LINE__, __VA_ARGS__))
+
 #define PrintRuntimeError(...) \
     do { \
         auto msg = error_message(__FILE__, __LINE__, __VA_ARGS__); \
