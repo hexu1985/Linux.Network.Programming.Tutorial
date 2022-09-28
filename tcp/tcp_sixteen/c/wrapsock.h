@@ -4,6 +4,8 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
+#include "error.h"
+
 int 
 Accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
 
@@ -28,8 +30,8 @@ Inet_pton(int family, const char *strptr, void *addrptr);
 void 
 Listen(int sockfd, int backlog);
 
-void
-Readn(int fd, void *ptr, size_t nbytes);
+ssize_t 
+Recv(int sockfd, void *buf, size_t len, int flags);
 
 void
 Setsockopt(int sockfd, int level, int optname, const void *optval, socklen_t optlen);

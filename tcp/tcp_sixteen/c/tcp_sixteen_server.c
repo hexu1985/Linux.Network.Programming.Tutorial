@@ -5,14 +5,27 @@
 
 #include "wrapsock.h"
 
-void Sendall(int sockfd, const char *str)
+void sendall(int sockfd, const char *str)
 {
     Writen(sockfd, str, strlen(str));
 }
 
-void Recvall(int sockfd, char *buf, int n)
+void recvall(int sockfd, char *buf, int length)
 {
-    Readn(sockfd, buf, n);
+    int ntotal = 0;
+    int nread = 0;
+    char *ptr = buf;
+
+    while (ntotal < length) {
+        nread = Recv(sockfd, ptr, length-ntotal, 0);
+        if (nread == 0) {
+            err_quit("was expecting %d bytes but only received"
+                    " %d bytes before the socket closed",
+                    length, ntotal);
+        }
+        ntotal += nread;
+        ptr += nread;
+    }
 }
 
 void server(const char *interface, uint16_t port)
@@ -44,7 +57,7 @@ void server(const char *interface, uint16_t port)
             Sock_ntop((struct sockaddr *) &myaddr, len));
 
     while (1) {
-        printf("Waiting to accept a new connection");
+        printf("Waiting to accept a new connection\n");
         len = sizeof(cliaddr);
         connfd = Accept(listenfd, (struct sockaddr *) &cliaddr, &len);
         printf("We have accepted a connection from (%s)\n", 
@@ -58,9 +71,9 @@ void server(const char *interface, uint16_t port)
         Getpeername(connfd, (struct sockaddr *) &peeraddr, &len);
         printf("  Socket peer: (%s)\n", Sock_ntop((struct sockaddr *) &peeraddr, len));
 
-        Recvall(connfd, message, 16);
+        recvall(connfd, message, 16);
         printf("  Incoming sixteen-octet message: %s\n", message);
-        Sendall(connfd, "Farewell, client\n");
+        sendall(connfd, "Farewell, client\n");
         Close(connfd);
         printf("  Reply sent, socket closed\n");
     }

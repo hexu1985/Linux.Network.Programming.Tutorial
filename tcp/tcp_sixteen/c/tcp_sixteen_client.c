@@ -5,14 +5,27 @@
 
 #include "wrapsock.h"
 
-void Sendall(int sockfd, const char *str)
+void sendall(int sockfd, const char *str)
 {
     Writen(sockfd, str, strlen(str));
 }
 
-void Recvall(int sockfd, char *buf, int n)
+void recvall(int sockfd, char *buf, int length)
 {
-    Readn(sockfd, buf, n);
+    int ntotal = 0;
+    int nread = 0;
+    char *ptr = buf;
+
+    while (ntotal < length) {
+        nread = Recv(sockfd, ptr, length-ntotal, 0);
+        if (nread == 0) {
+            err_quit("was expecting %d bytes but only received"
+                    " %d bytes before the socket closed",
+                    length, ntotal);
+        }
+        ntotal += nread;
+        ptr += nread;
+    }
 }
 
 void client(const char *host, uint16_t port)
@@ -36,8 +49,8 @@ void client(const char *host, uint16_t port)
     printf("Client has been assigned socket name (%s)\n", 
             Sock_ntop((struct sockaddr *) &myaddr, len));
 
-    Sendall(sockfd, "Hi there, server");
-    Recvall(sockfd, reply, 16);
+    sendall(sockfd, "Hi there, server");
+    recvall(sockfd, reply, 16);
 
     printf("The server said %s\n", reply);
 
