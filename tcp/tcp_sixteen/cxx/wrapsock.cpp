@@ -105,10 +105,7 @@ std::string SocketAddress::ToString() const {
             ThrowSystemError("ToString() error: AF_xxx: %d, len %d", addr->sa_family, addrlen);
         }
         std::ostringstream os;
-        os << str;
-        if (ntohs(sin->sin_port) != 0) {
-            os << ":" << ntohs(sin->sin_port);
-        }
+        os << "('" << str << "', " << ntohs(sin->sin_port) << ")";
         return os.str();
     }
 
@@ -116,6 +113,11 @@ std::string SocketAddress::ToString() const {
         PrintRuntimeError("ToString() error: unknown AF_xxx: %d, len %d", addr->sa_family, addrlen);
         return "unknown";
     }
+}
+
+std::ostream& operator<<(std::ostream& out, const SocketAddress& sock_addr) {
+    out << sock_addr.ToString();
+    return out;
 }
 
 // ======
@@ -128,9 +130,64 @@ Socket::Socket(int family_, int type, int protocol): family(family_) {
         ThrowSystemError("Socket(%d, %d, %d) error", family, type, protocol);
 }
 
+Socket::Socket() {
+}
+
 Socket::~Socket() {
     if (sockfd >= 0) {
         close(sockfd);
+    }
+}
+
+Socket::Socket(Socket&& x) {
+    sockfd = x.sockfd;
+    family = x.family;
+    x.sockfd = -1;
+    x.family = -1;
+}
+
+Socket& Socket::operator=(Socket&& x) {
+    using std::swap;
+    swap(sockfd, x.sockfd);
+    swap(family, x.family);
+
+    return *this;
+}
+
+std::tuple<Socket, SocketAddress> Socket::Accept() {
+    SocketAddress sock_addr(family);
+    auto addr = sock_addr.GetAddrPtr();
+    auto addrlen = sock_addr.GetAddrLenPtr();
+
+    int n;
+again:
+    if ((n = accept(sockfd, addr, addrlen)) < 0) {
+#ifdef	EPROTO
+        if (errno == EPROTO || errno == ECONNABORTED)
+#else
+            if (errno == ECONNABORTED)
+#endif
+                goto again;
+            else
+                ThrowSystemError("Accept() error");
+    }
+    Socket sock;
+    sock.family = family;
+    sock.sockfd = n;
+    return std::tuple<Socket, SocketAddress>(std::move(sock), std::move(sock_addr));
+}
+
+void Socket::Bind(const char* host, uint16_t port) {
+    SocketAddress sock_addr(family, host, port);
+    Bind(sock_addr);
+}
+
+void Socket::Bind(const SocketAddress &sock_addr) {
+    auto addr = sock_addr.GetAddrPtr();
+    auto addrlen = *sock_addr.GetAddrLenPtr();
+    if (bind(sockfd, addr, addrlen) < 0) {
+        auto addr_str = sock_addr.ToString();
+        ThrowSystemError("Bind(%s) error", addr_str.c_str());
     }
 }
 
@@ -159,9 +216,15 @@ SocketAddress Socket::Getsockname() {
     auto addr = sock_addr.GetAddrPtr();
     auto addrlen = sock_addr.GetAddrLenPtr();
     if (getsockname(sockfd, addr, addrlen) < 0) {
-        ThrowSystemError("Getsockname error");
+        ThrowSystemError("Getsockname() error");
     }
     return sock_addr;
+}
+
+void Socket::Listen(int backlog) {
+    if (listen(sockfd, backlog) < 0) {
+        ThrowSystemError("Listen() error");
+    }
 }
 
 int Socket::Recv(void *buf, size_t len, int flags, std::error_code& ec) {

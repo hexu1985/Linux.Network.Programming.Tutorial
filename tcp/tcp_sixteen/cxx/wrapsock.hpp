@@ -5,7 +5,10 @@
 #include <arpa/inet.h>
 
 #include <string>
-#include <system_error>
+#include <iosfwd>
+#include <tuple>
+
+#include "error.hpp"
 
 // =============
 // SocketAddress
@@ -36,6 +39,8 @@ private:
     sockaddr* addr = nullptr;
     socklen_t addrlen = 0;
 };
+
+std::ostream& operator<<(std::ostream& out, const SocketAddress& sock_addr);
 
 // ======
 // Socket
@@ -79,7 +84,20 @@ public:
     int SendAll(const void *buf, size_t len, int flags, std::error_code& ec);
     void SendAll(const std::string& buf, int flags=0);
 
+    template <typename OptValT>
+    void Setsockopt(int level, int optname, const OptValT& optval);
+
+private:
+    Socket();
+
 private:
     int sockfd = -1;
-    int family;
+    int family = -1;
 };
+
+template <typename OptValT>
+void Socket::Setsockopt(int level, int optname, const OptValT& optval) {
+    if (setsockopt(sockfd, level, optname, &optval, sizeof(OptValT)) < 0)
+        ThrowSystemError("Setsockopt(%d, %d) error", level, optname);
+}
+

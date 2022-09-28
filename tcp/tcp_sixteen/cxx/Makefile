@@ -7,7 +7,7 @@ INCLUDE =
 LDFLAGS = 
 LDPATH = 
 
-PROGS =	tcp_sixteen_client #tcp_sixteen_server
+PROGS =	tcp_sixteen_client tcp_sixteen_server
 
 .PHONY: all
 all: $(PROGS)
@@ -23,5 +23,5 @@ clean:
 tcp_sixteen_client: tcp_sixteen_client.o wrapsock.o error.o
 	$(CXX) -o $@ $^ $(CFLAGS) $(INCLUDE) $(LDFLAGS) $(LDPATH)
 
-#tcp_sixteen_server: tcp_sixteen_server.o wrapsock.o error.o
-#	$(CXX) -o $@ $^ $(CFLAGS) $(INCLUDE) $(LDFLAGS) $(LDPATH)
+tcp_sixteen_server: tcp_sixteen_server.o wrapsock.o error.o
+	$(CXX) -o $@ $^ $(CFLAGS) $(INCLUDE) $(LDFLAGS) $(LDPATH)

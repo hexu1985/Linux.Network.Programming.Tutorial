@@ -1,7 +1,6 @@
 #include <string>
 #include <iostream>
 
-#include "error.hpp"
 #include "wrapsock.hpp"
 
 std::string recvall(Socket& sock, int length) {
@@ -21,11 +20,10 @@ std::string recvall(Socket& sock, int length) {
 void client(const char* host, uint16_t port) {
     Socket sock(AF_INET, SOCK_STREAM);
     sock.Connect(host, port);
-    std::cout << "Client has been assigned socket name ("
-              << sock.Getsockname().ToString() << ")\n";
+    std::cout << "Client has been assigned socket name " << sock.Getsockname() << std::endl;
     sock.SendAll("Hi there, server");
     auto reply = recvall(sock, 16);
-    std::cout << "The server said " << reply << '\n';
+    std::cout << "The server said " << reply << std::endl;
     sock.Close();
 }
 
