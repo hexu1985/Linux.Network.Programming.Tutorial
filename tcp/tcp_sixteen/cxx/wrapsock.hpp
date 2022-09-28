@@ -5,6 +5,7 @@
 #include <arpa/inet.h>
 
 #include <string>
+#include <system_error>
 
 // =============
 // SocketAddress
@@ -63,6 +64,15 @@ public:
     std::tuple<Socket, SocketAddress> Accept();
 
     SocketAddress Getsockname();
+
+    void SendAll(const std::string& data);
+    void SendAll(const void *ptr, size_t nbytes);
+
+    int Recv(void *ptr, size_t nbytes, int flags, std::error_code& ec);
+    int Recv(void *ptr, size_t nbytes, int flags=0);
+    std::string Recv(size_t nbytes, int flags=0);
+
+    void Close();
 
     int GetDescriptor() { return sockfd; }
     int GetFamily() { return family; }

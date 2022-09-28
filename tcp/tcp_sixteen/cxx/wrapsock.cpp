@@ -1,6 +1,7 @@
 #include "wrapsock.hpp"
 
 #include <unistd.h>
+#include <errno.h>
 
 #include <cstring>
 #include <cassert>
@@ -157,3 +158,32 @@ SocketAddress Socket::Getsockname() {
     return sock_addr;
 }
 
+int Socket::Recv(void *ptr, size_t nbytes, int flags, std::error_code& ec) {
+    ssize_t n = recv(sockfd, ptr, nbytes, flags);
+    if (n < 0) {
+        ec.assign(errno, std::system_category());
+    }
+    return n;
+}
+
+int Socket::Recv(void *ptr, size_t nbytes, int flags) {
+    ssize_t n = recv(sockfd, ptr, nbytes, flags);
+    if (n < 0) {
+        ThrowSystemError("Recv() error");
+    }
+    return n;
+}
+
+std::string Socket::Recv(size_t nbytes, int flags) {
+    std::string buf;
+    buf.resize(nbytes);
+    auto n = Recv(buf.data(), buf.size(), flags);
+    buf.resize(n);
+    return buf;
+}
+
+void Socket::Close() {
+    if (close(sockfd) < 0)
+        ThrowSystemError("Close() error");
+    sockfd = -1;
+}
