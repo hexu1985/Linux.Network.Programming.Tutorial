@@ -14,6 +14,7 @@ def recvall(sock, length):
         data += more
     return data
 
+
 def server(interface, port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -32,9 +33,11 @@ def server(interface, port):
         sc.close()
         print('  Reply sent, socket closed')
 
+
 if __name__ == '__main__':
     host = ""
     port = 1060
+
     if len(sys.argv) > 1:
         host = sys.argv[1]
     if len(sys.argv) > 2:

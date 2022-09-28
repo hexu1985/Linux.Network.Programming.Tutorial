@@ -1,6 +1,5 @@
 #include <string>
 #include <iostream>
-
 #include "wrapsock.hpp"
 
 std::string recvall(Socket& sock, int length) {
@@ -27,17 +26,14 @@ void client(const char* host, uint16_t port) {
     sock.Close();
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     const char* host = "127.0.0.1";
     uint16_t port = 1060;
 
-    if (argc > 1) {
+    if (argc > 1) 
         host = argv[1];
-    }
-    if (argc > 2) {
+    if (argc > 2) 
         port = atoi(argv[2]);
-    }
 
     client(host, port);
 
