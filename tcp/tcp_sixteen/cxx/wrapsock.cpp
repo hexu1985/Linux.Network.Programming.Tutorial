@@ -211,6 +211,16 @@ void Socket::Connect(const SocketAddress &sock_addr) {
     }
 }
 
+SocketAddress Socket::Getpeername() {
+    SocketAddress sock_addr(family);
+    auto addr = sock_addr.GetAddrPtr();
+    auto addrlen = sock_addr.GetAddrLenPtr();
+    if (getpeername(sockfd, addr, addrlen) < 0) {
+        ThrowSystemError("Getpeername() error");
+    }
+    return sock_addr;
+}
+
 SocketAddress Socket::Getsockname() {
     SocketAddress sock_addr(family);
     auto addr = sock_addr.GetAddrPtr();

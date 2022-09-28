@@ -28,14 +28,12 @@ void server(const char *interface, uint16_t port) {
         auto [sc, sockname] = sock.Accept();
         std::cout << "We have accepted a connection from " << sockname << std::endl;
         std::cout << "  Socket name: " << sc.Getsockname() << std::endl;
-#if 0
         std::cout << "  Socket peer: " << sc.Getpeername() << std::endl; 
         auto message = recvall(sc, 16);
         std::cout << "  Incoming sixteen-octet message: " << message << std::endl;
         sc.SendAll("Farewell, client");
-        sc.Close()
+        sc.Close();
         std::cout << "  Reply sent, socket closed" << std::endl;
-#endif
     }
     sock.Close();
 }

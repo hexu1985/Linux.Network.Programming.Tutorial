@@ -71,6 +71,7 @@ public:
     int GetDescriptor() { return sockfd; }
     int GetFamily() { return family; }
 
+    SocketAddress Getpeername();
     SocketAddress Getsockname();
 
     void Listen(int backlog);
