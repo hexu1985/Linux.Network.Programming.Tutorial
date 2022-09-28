@@ -130,19 +130,16 @@ Writen(int fd, const void *ptr, size_t nbytes)
 
 static char *sock_ntop(const struct sockaddr *addr, socklen_t addrlen)
 {
-    char portstr[8];
+    char ipstr[128];
     static char str[128];
 
     switch (addr->sa_family) {
     case AF_INET: {
         struct sockaddr_in *sin = (struct sockaddr_in *) addr;
 
-        if (inet_ntop(AF_INET, &sin->sin_addr, str, sizeof(str)) == NULL)
+        if (inet_ntop(AF_INET, &sin->sin_addr, ipstr, sizeof(ipstr)) == NULL)
             return(NULL);
-        if (ntohs(sin->sin_port) != 0) {
-            snprintf(portstr, sizeof(portstr), ":%d", ntohs(sin->sin_port));
-            strcat(str, portstr);
-        }
+        snprintf(str, sizeof(str), "('%s', %d)", ipstr, ntohs(sin->sin_port));
         return(str);
     }
 

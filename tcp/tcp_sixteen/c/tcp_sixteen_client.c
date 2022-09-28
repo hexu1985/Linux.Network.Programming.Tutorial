@@ -46,7 +46,7 @@ void client(const char *host, uint16_t port)
 
     len = sizeof(myaddr);
     Getsockname(sockfd, (struct sockaddr *) &myaddr, &len);
-    printf("Client has been assigned socket name (%s)\n", 
+    printf("Client has been assigned socket name %s\n", 
             Sock_ntop((struct sockaddr *) &myaddr, len));
 
     sendall(sockfd, "Hi there, server");

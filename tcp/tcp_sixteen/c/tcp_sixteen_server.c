@@ -53,23 +53,23 @@ void server(const char *interface, uint16_t port)
 
     len = sizeof(myaddr);
     Getsockname(listenfd, (struct sockaddr *) &myaddr, &len);
-    printf("Client has been assigned socket name (%s)\n", 
+    printf("Client has been assigned socket name %s\n", 
             Sock_ntop((struct sockaddr *) &myaddr, len));
 
     while (1) {
         printf("Waiting to accept a new connection\n");
         len = sizeof(cliaddr);
         connfd = Accept(listenfd, (struct sockaddr *) &cliaddr, &len);
-        printf("We have accepted a connection from (%s)\n", 
+        printf("We have accepted a connection from %s\n", 
                 Sock_ntop((struct sockaddr *) &cliaddr, len));
 
         len = sizeof(myaddr);
         Getsockname(connfd, (struct sockaddr *) &myaddr, &len);
-        printf("  Socket name: (%s)\n", Sock_ntop((struct sockaddr *) &myaddr, len));
+        printf("  Socket name: %s\n", Sock_ntop((struct sockaddr *) &myaddr, len));
 
         len = sizeof(peeraddr);
         Getpeername(connfd, (struct sockaddr *) &peeraddr, &len);
-        printf("  Socket peer: (%s)\n", Sock_ntop((struct sockaddr *) &peeraddr, len));
+        printf("  Socket peer: %s\n", Sock_ntop((struct sockaddr *) &peeraddr, len));
 
         recvall(connfd, message, 16);
         printf("  Incoming sixteen-octet message: %s\n", message);
