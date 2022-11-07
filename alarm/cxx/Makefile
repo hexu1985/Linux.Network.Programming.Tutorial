@@ -4,7 +4,7 @@ INCLUDE =
 LDFLAGS = 
 LDLIBS = -lpthread
 
-PROGS =	alarm_thread_timer alarm_thread_timer2
+PROGS =	alarm_thread alarm_thread2
 
 .PHONY: all
 all: $(PROGS)
@@ -14,9 +14,9 @@ clean:
 	@$(RM) $(PROGS) *.o
 	@echo "clean OK!"
 
-alarm_thread_timer: alarm_thread_timer.o
+alarm_thread: alarm_thread.o
 	$(CXX) -o $@ $^ $(LDFLAGS) $(LDLIBS)
 
-alarm_thread_timer2: alarm_thread_timer2.o
+alarm_thread2: alarm_thread2.o
 	$(CXX) -o $@ $^ $(LDFLAGS) $(LDLIBS)
 
