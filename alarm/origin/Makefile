@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -g3 -Wall -Wextra
+CFLAGS = -g3 -Wall -Wextra -DDEBUG
 LDLIBS = -lpthread
 
 SOURCES = $(shell ls *.c)
