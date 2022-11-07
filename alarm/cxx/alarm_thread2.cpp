@@ -54,7 +54,7 @@ int main()
             std::cout << "start timer at " 
                 << strftime("%Y-%m-%d %H:%M:%S", std::chrono::system_clock::now()) << '\n';
             Timer t(seconds, std::bind(callback, alarm));
-            t.start();
+            t.Start();
         } 
         catch (const std::exception& e) {
             std::cout << "Bad command" << std::endl;
