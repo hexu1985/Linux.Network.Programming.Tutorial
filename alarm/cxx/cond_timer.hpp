@@ -9,8 +9,12 @@ public:
     typedef std::function<void ()> Callback;
 
     Timer(int interval, Callback function); 
-    void start();
-    void stop(); 
+    void Start();
+    void Stop(); 
+
+#ifdef DEBUG
+    void SetMessage(const std::string& message);
+#endif
 
 public:
     struct Impl; 

@@ -7,10 +7,31 @@
 #include <condition_variable>
 #include <thread>
 
+#ifdef DEBUG
+#include <iostream>
+#endif
+
 using Clock = std::chrono::system_clock;
 using TimePoint = Clock::time_point; 
 using Seconds = std::chrono::seconds;
 using AlarmPtr = std::shared_ptr<Timer::Impl>;
+
+#ifdef DEBUG
+std::ostream& operator<<(std::ostream& out, const TimePoint& tp) {
+    using namespace std::chrono;
+    auto d = duration_cast<seconds>(tp.time_since_epoch());
+    out << d.count();
+    return out;
+}
+
+template <typename Rep, typename Preiod>
+std::ostream& operator<<(std::ostream& out, const std::chrono::duration<Rep, Preiod>& d) {
+    using namespace std::chrono;
+    auto s = duration_cast<seconds>(d);
+    out << s.count();
+    return out;
+}
+#endif
 
 class Timer::Impl {
 public:
@@ -65,6 +86,7 @@ void AlarmLooper::Insert(AlarmPtr alarm) {
     for ( ; first != last; ++first) {
         if ((*first)->time >= alarm->time) {
             alarm_list.insert(first, alarm);
+            break;
         }
     }
     /*
@@ -78,8 +100,8 @@ void AlarmLooper::Insert(AlarmPtr alarm) {
 #ifdef DEBUG
     std::cout << "[list:";
     for (auto item : alarm_list) {
-        std::cout << alarm->time << "(" << (alarm->time - Clock::now()) << ")[\""
-                << alarm->message << "\"] ";
+        std::cout << item->time << "(" << (item->time - Clock::now()) << ")[\""
+                << item->message << "\"] ";
     }
     std::cout << "]\n" << std::flush;
 #endif
@@ -178,3 +200,24 @@ void TimerThread::AddTimer(std::shared_ptr<Timer::Impl> timer) {
         alarm_looper.ThreadSafetyInsert(timer);
     }
 }
+
+static TimerThread default_timer_thread;
+
+Timer::Timer(int interval, Callback function) {
+    pimpl = std::make_shared<Impl>(interval, function);
+}
+
+void Timer::Start() {
+    default_timer_thread.AddTimer(pimpl);
+}
+
+void Timer::Stop() {
+    pimpl->active = false;
+}
+
+#ifdef DEBUG
+void Timer::SetMessage(const std::string& message) {
+    pimpl->message = message;
+}
+#endif
+
