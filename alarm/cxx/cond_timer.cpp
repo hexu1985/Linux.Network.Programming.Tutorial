@@ -1,10 +1,11 @@
 #include "cond_timer.hpp"
+#include <list>
+#include <memory>
 #include <chrono>
 #include <atomic>
 #include <mutex>
 #include <condition_variable>
-#include <memory>
-#include <list>
+#include <thread>
 
 using Clock = std::chrono::system_clock;
 using TimePoint = Clock::time_point; 
@@ -33,7 +34,11 @@ public:
     AlarmLooper(const AlarmLooper&) = delete;
     void operator=(const AlarmLooper&) = delete;
 
-    void ThreadSafetyInsert();
+    void ThreadSafetyInsert(AlarmPtr alarm) {
+        std::unique_lock<std::mutex> lock(alarm_mutex);
+        Insert(alarm);
+    }
+
     void Insert(AlarmPtr alarm);
     void Run();
 
@@ -145,5 +150,31 @@ void AlarmLooper::Run() {
                 alarm->function();
             }
         }
+    }
+}
+
+class TimerThread {
+public:
+    TimerThread(); 
+    void AddTimer(std::shared_ptr<Timer::Impl> timer);
+    bool CurrentThreadIsAlarmLooperThread() {
+        return std::this_thread::get_id() == looper_thread.get_id();
+    }
+
+private:
+    AlarmLooper alarm_looper;
+    std::thread looper_thread;
+};
+
+TimerThread::TimerThread() {
+    looper_thread = std::thread(&AlarmLooper::Run, &alarm_looper);
+    looper_thread.detach();
+}
+
+void TimerThread::AddTimer(std::shared_ptr<Timer::Impl> timer) {
+    if (CurrentThreadIsAlarmLooperThread()) {
+        alarm_looper.Insert(timer);
+    } else {
+        alarm_looper.ThreadSafetyInsert(timer);
     }
 }
