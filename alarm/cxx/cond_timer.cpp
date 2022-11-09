@@ -211,7 +211,7 @@ void Timer::Start() {
     default_timer_thread.AddTimer(pimpl);
 }
 
-void Timer::Stop() {
+void Timer::Cancel() {
     pimpl->active = false;
 }
 

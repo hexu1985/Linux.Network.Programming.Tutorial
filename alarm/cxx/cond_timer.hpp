@@ -10,7 +10,7 @@ public:
 
     Timer(int interval, Callback function); 
     void Start();
-    void Stop(); 
+    void Cancel(); 
 
 #ifdef DEBUG
     void SetMessage(const std::string& message);

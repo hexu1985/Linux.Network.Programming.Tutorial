@@ -23,7 +23,7 @@ public:
         t.detach();
     }
 
-    void Stop() {
+    void Cancel() {
         pimpl->active.store(false);
     }
 
