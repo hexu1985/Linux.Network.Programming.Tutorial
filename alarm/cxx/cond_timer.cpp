@@ -33,8 +33,8 @@ public:
     AlarmLooper(const AlarmLooper&) = delete;
     void operator=(const AlarmLooper&) = delete;
 
-    void InsertAlarmThreadSafety();
-    void InsertAlarm();
+    void ThreadSafetyInsert();
+    void Insert(AlarmPtr alarm);
     void Run();
 
 private:
@@ -44,6 +44,55 @@ private:
     std::condition_variable alarm_cond;
 };
 
+/*
+ * Insert alarm entry on list, in order.
+ */
+void AlarmLooper::Insert(AlarmPtr alarm) {
+    auto first = alarm_list.begin();
+    auto last = alarm_list.end();
+
+    /*
+     * LOCKING PROTOCOL:
+     * 
+     * This routine requires that the caller have locked the
+     * alarm_mutex!
+     */
+    for ( ; first != last; ++first) {
+        if ((*first)->time >= alarm->time) {
+            alarm_list.insert(first, alarm);
+        }
+    }
+    /*
+     * If we reached the end of the list, insert the new alarm
+     * there.  ("next" is NULL, and "last" points to the link
+     * field of the last item, or to the list header.)
+     */
+    if (first == last) {
+        alarm_list.push_back(alarm);
+    }
+#ifdef DEBUG
+    std::cout << "[list:";
+    for (auto item : alarm_list) {
+        std::cout << alarm->time << "(" << (alarm->time - Clock::now()) << ")[\""
+                << alarm->message << "\"] ";
+    }
+    std::cout << "]\n" << std::flush;
+#endif
+    /*
+     * Wake the alarm thread if it is not busy (that is, if
+     * current_alarm is 0, signifying that it's waiting for
+     * work), or if the new alarm comes before the one on
+     * which the alarm thread is waiting.
+     */
+    if (current_alarm == TimePoint{} || alarm->time < current_alarm) {
+        current_alarm = alarm->time;
+        alarm_cond.notify_one();
+    }
+}
+
+/*
+ * The alarm thread's start routine.
+ */
 void AlarmLooper::Run() {
     AlarmPtr alarm;
     TimePoint now;
@@ -73,10 +122,8 @@ void AlarmLooper::Run() {
         expired = false;
         if (alarm->time > now) {
 #ifdef DEBUG
-            std::cout << "[waiting: " << alarm->time 
-                << "(" << (alarm->time - Clock::now()) << ")"
-                << '"' << alarm->message << '"'
-                << std::endl;
+            std::cout << "[waiting: " << alarm->time << "(" << (alarm->time - Clock::now()) << ")\""
+                << alarm->message << "\"\n" << std::flush; 
 #endif
             current_alarm = alarm->time;
             while (current_alarm == alarm->time) {
@@ -85,6 +132,9 @@ void AlarmLooper::Run() {
                     expired = true;
                     break;
                 } 
+            }
+            if (!expired) {
+                Insert(alarm);
             }
         } else {
             expired = true;
