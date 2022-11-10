@@ -17,6 +17,8 @@ using Seconds = std::chrono::seconds;
 using AlarmPtr = std::shared_ptr<Timer::Impl>;
 
 #ifdef DEBUG
+namespace {
+
 std::ostream& operator<<(std::ostream& out, const TimePoint& tp) {
     using namespace std::chrono;
     auto d = duration_cast<seconds>(tp.time_since_epoch());
@@ -31,6 +33,8 @@ std::ostream& operator<<(std::ostream& out, const std::chrono::duration<Rep, Pre
     out << s.count();
     return out;
 }
+
+}   // namespace
 #endif
 
 class Timer::Impl {
@@ -205,7 +209,6 @@ void TimerThread::AddTimer(std::shared_ptr<Timer::Impl> timer) {
         alarm_looper.ThreadSafetyInsert(timer);
     }
 }
-
 
 Timer::Timer(int interval, Callback function) {
     pimpl = std::make_shared<Impl>(interval, function);

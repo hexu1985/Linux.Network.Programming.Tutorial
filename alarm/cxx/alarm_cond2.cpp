@@ -21,10 +21,18 @@ std::string strftime(const char* format, const std::chrono::time_point<std::chro
     return std::string(mbstr);
 }
 
+std::ostream& operator<<(std::ostream& out, const std::chrono::time_point<std::chrono::system_clock>& tp) {
+    out << strftime("%Y-%m-%d %H:%M:%S", tp);
+    return out;
+}
+
+std::ostream& operator<<(std::ostream& out, const Alarm& alarm) {
+    out << "(" << alarm.seconds << ") " << alarm.message;
+    return out;
+}
+
 void callback(std::shared_ptr<Alarm> alarm) {
-    std::cout << "alarm timer at " 
-        << strftime("%Y-%m-%d %H:%M:%S", std::chrono::system_clock::now()) << '\n';
-    std::cout << "(" << alarm->seconds << ") " << alarm->message << std::endl;
+    std::cout << "\nalarm timer [" << *alarm << "] at " << std::chrono::system_clock::now() << std::endl;
 }
 
 std::tuple<int, std::string> parse_command(const std::string& line) {
@@ -50,8 +58,7 @@ int main()
         try {
             std::tie(seconds, message) = parse_command(line);
             auto alarm = std::make_shared<Alarm>(seconds, message);
-            std::cout << "start timer at " 
-                << strftime("%Y-%m-%d %H:%M:%S", std::chrono::system_clock::now()) << '\n';
+            std::cout << "start timer [" << *alarm << "] at " << std::chrono::system_clock::now() << std::endl;
             Timer t(seconds, std::bind(callback, alarm));
 #ifdef DEBUG
             t.SetMessage(message);
