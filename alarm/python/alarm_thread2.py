@@ -9,8 +9,7 @@ class Alarm:
         self.message = message
 
 def callback(alarm:Alarm):
-    print("alarm timer at {}".format(datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
-    print("({}) {}\n".format(alarm.seconds, alarm.message))
+    print("\nstart timer [({}) {}] at {}".format(alarm.seconds, alarm.message, datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
 
 if __name__ == "__main__":
     while True:
@@ -19,9 +18,9 @@ if __name__ == "__main__":
             continue
 
         try:
-            seconds, *message = line.split(' ')
-            alarm = Alarm(int(seconds), ' '.join(message))
-            print("start timer at {}".format(datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+            seconds, *messages = line.split(' ')
+            alarm = Alarm(int(seconds), ' '.join(messages))
+            print("start timer [({}) {}] at {}".format(alarm.seconds, alarm.message, datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
             t = Timer(interval=int(seconds), function=callback, args=(alarm, ))
             t.start()
         except:
