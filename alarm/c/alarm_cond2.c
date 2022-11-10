@@ -14,12 +14,12 @@
 #include <time.h>
 #include "errors.h"
 
-void print_time(const char* str)
+const char* timestamp()
 {
     time_t rawtime = time(NULL);
-    char mbstr[100];
+    static char mbstr[100];
     strftime(mbstr, sizeof(mbstr), "%Y-%m-%d %H:%M:%S", localtime(&rawtime));
-    printf("%s%s\n", str, mbstr);
+    return mbstr;
 }
 
 /*
@@ -154,8 +154,7 @@ void *alarm_thread (void *arg)
         } else
             expired = 1;
         if (expired) {
-            print_time("alarm timer at ");
-            printf ("(%d) %s\n", alarm->seconds, alarm->message);
+            printf ("\nalarm timer [(%d) %s] at %s\n", alarm->seconds, alarm->message, timestamp());
             free (alarm);
         }
     }
@@ -199,7 +198,7 @@ int main (int argc, char *argv[])
              * sorted by expiration time.
              */
             alarm_insert (alarm);
-            print_time("start timer at ");
+            printf ("start timer [(%d) %s] at %s\n", alarm->seconds, alarm->message, timestamp());
             status = pthread_mutex_unlock (&alarm_mutex);
             if (status != 0)
                 err_abort (status, "Unlock mutex");

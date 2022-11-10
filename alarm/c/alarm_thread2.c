@@ -7,12 +7,12 @@
 #include <pthread.h>
 #include "errors.h"
 
-void print_time(const char* str)
+const char* timestamp()
 {
     time_t rawtime = time(NULL);
-    char mbstr[100];
+    static char mbstr[100];
     strftime(mbstr, sizeof(mbstr), "%Y-%m-%d %H:%M:%S", localtime(&rawtime));
-    printf("%s%s\n", str, mbstr);
+    return mbstr;
 }
 
 typedef struct alarm_tag {
@@ -29,8 +29,7 @@ void *alarm_thread (void *arg)
     if (status != 0)
         err_abort (status, "Detach thread");
     sleep (alarm->seconds);
-    print_time("alarm timer at ");
-    printf ("(%d) %s\n", alarm->seconds, alarm->message);
+    printf ("\nalarm timer [(%d) %s] at %s\n", alarm->seconds, alarm->message, timestamp());
     free (alarm);
     return NULL;
 }
@@ -60,7 +59,7 @@ int main (int argc, char *argv[])
             fprintf (stderr, "Bad command\n");
             free (alarm);
         } else {
-            print_time("start timer at ");
+            printf ("start timer [(%d) %s] at %s\n", alarm->seconds, alarm->message, timestamp());
             status = pthread_create (
                 &thread, NULL, alarm_thread, alarm);
             if (status != 0)
