@@ -183,6 +183,11 @@ public:
         return std::this_thread::get_id() == looper_thread.get_id();
     }
 
+    static TimerThread& GetInstance() {
+        static TimerThread timer_thread;
+        return timer_thread;
+    }
+
 private:
     AlarmLooper alarm_looper;
     std::thread looper_thread;
@@ -201,14 +206,13 @@ void TimerThread::AddTimer(std::shared_ptr<Timer::Impl> timer) {
     }
 }
 
-static TimerThread default_timer_thread;
 
 Timer::Timer(int interval, Callback function) {
     pimpl = std::make_shared<Impl>(interval, function);
 }
 
 void Timer::Start() {
-    default_timer_thread.AddTimer(pimpl);
+    TimerThread::GetInstance().AddTimer(pimpl);
 }
 
 void Timer::Cancel() {
