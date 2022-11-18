@@ -258,10 +258,12 @@ private:
 };
 ```
 基本上是C版本的代码抽离和封装，并把相关函数替换成C++标准库的实现而已。不过Timer类麻雀虽小，但五脏俱全，用的了C++标准库中的：
-- std::function
-- std::shared_ptr
-- std::atomic
-- std::thread
-- std::chrono
+- std::function：用于抽象超时回调函数
+- std::shared_ptr：用于管理Timer::Impl的生命周期
+- std::atomic：用于Cancel Timer，保证线程安全。
+- std::thread：用于Timer线程，sleep指定时间，然后调用回调函数
+- std::chrono：C++标准库的时间类都在其中实现
+- C++ lambda：Timer线程的target函数
 
-还用的了Pimpl惯用法。
+还用的了Pimpl惯用法，这里把接口和实现都放在了头文件里，标准的做法是Timer的成员函数实现和Timer::Impl实现已经除了std::shared_ptr以外的依赖，
+都可以挪到.cpp文件里。
