@@ -1,7 +1,7 @@
 基于C++标准库实现定时器Timer类
 ==============================
 
-定时器timer是多线程编程中经常设计到的工具类
+定时器类是多线程编程中经常设计到的工具类
 简单的定时器原理其实很简单（是不是有点GNU is not unix的味道;）：
 
 - 创建一个新线程
@@ -27,15 +27,15 @@ t.start()  # after 30 seconds, "hello, world" will be printed
     创建一个定时器，在经过 interval 秒的间隔事件后，将会用参数 args 和关键字参数 kwargs 调用 function。
     如果 args 为 None （默认值），则会使用一个空列表。如果 kwargs 为 None （默认值），则会使用一个空字典。
 
-cancel()
+**cancel()**
     停止定时器并取消执行计时器将要执行的操作。仅当计时器仍处于等待状态时有效。
 
-接下来我将给出两种C++的Timer实现，接口类似于python的threading.Timer，不过精度为秒，原因有二：
+接下来我将给出两种C++的Timer实现，接口类似于python的threading.Timer，不过精度为秒级的，其原因有二：
 
-- 实现代码参考了Posix多线程编程里的alarm程序，为了方便大家对比基于pthread的C语言实现，这里也以秒为单位
-- 避免一上来过多的涉及C++标准库中chrono中对于时间转化的函数的使用，使代码逻辑更清晰的集中在timer相关的部分
+- 实现代码参考了Posix多线程编程里的alarm实例程序，为了方便大家对比C语言版本的实现，这里也以秒为单位
+- 避免一上来过多的涉及C++标准库中`<chrono>`的用法，使代码逻辑更清晰的集中在定时器相关的部分
 
-当然，作为一个在产品级代码中可用的Timer，精度至少应该在毫米才行，所以文章最后也会给出精度在微秒的完整实现。
+当然，作为一个在产品级代码中可用的Timer，精度至少应该在毫米级才行，所以文章最后也会给出精度在微秒的代码实现的链接。
 
 首先，给出C++版本的Timer的接口定义：
 几乎完全仿照python的threading.Timer,
@@ -56,11 +56,11 @@ public:
 - Start()：启动定时器
 - Cancel()：停止定时器并取消执行计时器将要执行的操作。
 
-在给出C++的实现前，我们先给出测试驱动程序。测试驱动程序是从《Posix多线程程序设计》（英文原版书名为Programming with POSIX Threads）里的实例代码而来：闹钟程序。
-我接下来的介绍顺序如下：
+在给出C++的实现前，我们先给出测试驱动程序。测试驱动程序来源于《Posix多线程程序设计》（英文原版书名为Programming with POSIX Threads）里的闹钟实例程序。而我接下来的介绍顺序源于我的编码实现顺序，如下：
+
 - 先给出书中基于pthread的多线程版本的实例代码，C代码
 - 将C版本的代码转化成等价的python代码，基于threading.Timer接口实现的版本
-- 将python版本的代码，转化成基于Timer类接口的版本，形成Timer的测试驱动代码
+- 将python版本的代码，转化成C++版本，并基于C++的Timer类接口，得到C++的Timer类的测试驱动代码
 - 实现C++版的Timer类，并且编译测试驱动代码，运行验证
 
 那么，我先给出基于pthread的多线程版本的实例代码，C代码：
@@ -128,7 +128,7 @@ int main (int argc, char *argv[])
 ```
 代码的完整说明参见《Posix多线程程序设计》 1.5.3章节，这里就不再搬运原文了。
 
-接下来是移殖的python版本代码：
+接下来是移殖成python版本的代码：
 ```python
 #!/usr/bin/env python3
 
@@ -159,7 +159,7 @@ if __name__ == "__main__":
 ```
 python版本的代码大家有兴趣的可以在本地运行一下，看看效果;)
 
-再然后，我们把这段代码翻译成C++版本的
+再然后，我把这段代码翻译成C++版本的，基于C++的Timer类接口：
 ```cpp
 #include "timer.hpp"
 #include <cstdlib>
@@ -212,7 +212,7 @@ int main()
     }
 }
 ```
-这样我们就有了C++版本Timer的测试驱动程序，并且可以跟C和python版本的代码运行对比。
+这样我们就有了C++版本Timer类的测试驱动程序，并且可以跟C和python版本的代码对比运行。
 
 接下来给出C++版本的Timer实现：
 ```cpp
@@ -258,19 +258,18 @@ private:
     std::shared_ptr<Impl> pimpl;
 };
 ```
-基本上是C版本的代码抽离和封装，并把相关函数替换成C++标准库的实现而已。不过Timer类麻雀虽小，但五脏俱全，用的了C++标准库中的：
+C++实现部分，基本上是C版本的代码抽离和封装，并把相关函数替换成C++标准库的实现而已。不过Timer类麻雀虽小，但五脏俱全，其中用到的C++标准库组件有：
 - std::function：用于抽象到期回调函数
 - std::shared_ptr：用于管理Timer::Impl的生命周期
-- std::atomic：用于Cancel Timer，保证线程安全
+- std::atomic：用于Cancel Timer的flag，保证线程安全
 - std::thread：用于Timer线程，sleep指定时间，然后调用回调函数
-- std::chrono：C++标准库的时间类都在其中实现
+- std::chrono：C++标准库中时间相关的实现都在其中
 - C++ lambda：Timer线程的target函数，捕获了this->pimpl，保证了Timerl::Impl对象不会因为Timer对象的析构而析构
 
-还用的了Pimpl惯用法，这里把接口和实现都放在了头文件里，标准的做法是Timer的成员函数实现和Timer::Impl实现已经除了std::shared_ptr和std::function以外的依赖，
-都可以挪到.cpp文件里。
+这里还用的了Pimpl惯用法，虽然目前是把接口和实现都放在了头文件里，但标准的做法是Timer的成员函数实现和Timer::Impl实现都放到源文件中，这样头文件里可以去掉除了std::shared_ptr和std::function以外的依赖。
 
-这个Timer类的实现优缺点是十分的明显，优点是代码简洁，一目了然，缺点是太过简洁，每个Timer需要一个线程去运行，系统资源消耗大。
-于是就引出了基于条件变量版本的Timer，实现“参考”了《Posix多线程程序设计》3.3.4章节提到闹钟实例的最终版本（与其说“参考”，改称“直译”也不为过;）。
+这个Timer类的实现优缺点是十分明显的：优点是代码简洁，一目了然，缺点是太过简洁，每个Timer需要一个线程去运行，系统资源消耗大。
+于是就引出了基于条件变量版本的Timer，实现“参考”了《Posix多线程程序设计》3.3.4章节提到闹钟实例的最终版本（与其说“参考”，改成“直译”也不为过;）。
 
 照例，我先给出基于pthread的条件变量版本的实例代码，C代码：
 ```c
@@ -538,7 +537,7 @@ int main()
 其实修改就只有两处：
 ![alarm_cond](png/alarm_cond.png)
 
-接下来给出C++的实现，如果C版本的代码看得懂，那C++版本的代码就可以说是一目了然，比较C++的版本是“直译”过来的。
+接下来给出C++的实现，如果C版本的代码看得懂，那C++版本的代码就可以说是一目了然，毕竟C++的版本是“直译”过来的。
 ```cpp
 #pragma once
 
@@ -564,7 +563,7 @@ private:
     std::shared_ptr<Impl> pimpl;
 };
 ```
-首先来看Timer的头文件，这里就看出Pimpl惯用法的优势了，头文件里完全剥离了对<chrono>、<thread>、<atomic>的依赖。
+首先来看Timer的头文件，这里就看出Pimpl惯用法的优势了，头文件里完全剥离了对`<chrono>、<thread>、<atomic>`的依赖。
 另外，增加了SetMessage接口，用于实现C版本中DEBUG宏中的调试信息打印
 
 下面是Timer的源文件，代码和C版本的一样，有点儿长：
@@ -807,20 +806,23 @@ void Timer::SetMessage(const std::string& message) {
 - AlarmLooper类：封装了C版本的函数alarm_thread、alarm_insert逻辑，AlarmLooper::Run对应alarm_thread，AlarmLooper::Insert对应alarm_insert
 - TimerThread类：作为单例类，管理运行AlarmLooper::Run的线程
 - 然后就是std::list替代了C手写的链表
-- std::mutex和std::conditon_variable替代了pthread_mutex_t和pthread_cond_t结构和函数。
+- std::mutex和std::conditon_variable替代了pthread_mutex_t和pthread_cond_t结构体和函数。
 
-最后，我来“吹一吹”实现C++版本的Timer的价值，以及可以改进优化的方向。
+最后，我来“吹一吹”实现C++版本Timer类的价值，以及可以改进优化的方向。
 价值方面：
-- C版本的代码很优秀，用C++的面向对象方式实现，可以再C++工程中以组件的方式复用（主要是指条件变量版本，多线程版本过于简陋，不过好处是head only）
+
+- C版本的代码很优秀，用C++的面向对象方式实现，可以在C++工程中以组件的方式复用（主要是指条件变量版本，多线程版本过于简陋，不过好处是head only）
 - C++版本依赖于C++标准库，而C++标准库是跨平台的，所以Timer类也是跨平台的（当然，如果把C版本的pthread函数替换成C11标准库的线程函数也能达到同样目的，但据我所知各编译器厂商对C11的多线程支持的不是很积极）
+
 改进方面：
-- 到期时间的精度是秒，后面会给出微秒级精度的实现链接（和目前的实现原理一致）
+
+- 到期时间的精度是秒级的，后面会给出微秒级精度的实现链接（和目前的实现原理一致）
 - std::list可以替换成std::multi_set以提高性能，依据是用红黑树的性能要好于链表的插入排序。
 - TimerThread类管理的thread是detach的，造成在linux上，进程退出时，有可能在std::condition_variable的析构函数上把进程hang住，这个也在微秒级的实现版本中做了改进。
 
 最后的最后，给出文章中提到的所有代码的完整实现链接：
-- 秒级的实现，包括C版本的原始代码，python版本的实例代码，C++的两个版本的代码，链接如下：<>
-- 微秒级的实现，包括python版本的实例代码，C++的两个版本的代码，链接如下：<>
+- 秒级的实现，包括C版本的原始代码，python版本的实例代码，C++的两个版本的代码，链接如下：<https://github.com/hexu1985/Linux.Network.Programming.Tutorial/tree/master/alarm>
+- 微秒级的实现，包括python版本的实例代码，C++的两个版本的代码，链接如下：<https://github.com/hexu1985/Collection.Of.Cpp.Utility.Class/tree/master/code/timer>
 
 
 ### 参考文档：
@@ -828,5 +830,4 @@ void Timer::SetMessage(const std::string& message) {
 - 《Posix多线程程序设计（Programming with POSIX Threads）》
 - [3.11.0 Documentation » The Python Standard Library » Concurrent Execution » threading](https://docs.python.org/3/library/threading.html)
 - [A Simple Timer in C++](https://www.fluentcpp.com/2018/12/28/timer-cpp/)
-
 
