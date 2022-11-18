@@ -52,7 +52,7 @@ public:
 ```
 
 - Callback：类型为std::function<void ()>，即返回类型为void的“函数”，当然在C++里可以是普通函数，函数对象，lambda等。
-- Timer(interval, function)：构造函数，创建一个Timer，interval秒后超时（相对于Timer构造时的时间点），回调函数为function。
+- Timer(interval, function)：构造函数，创建一个Timer，interval秒后超时（相对于调用Start函数时的时间点），回调函数为function。
 - Start()：启动定时器
 - Cancel()：停止定时器并取消执行计时器将要执行的操作。
 
@@ -257,4 +257,11 @@ private:
     std::shared_ptr<Impl> pimpl;
 };
 ```
+基本上是C版本的代码抽离和封装，并把相关函数替换成C++标准库的实现而已。不过Timer类麻雀虽小，但五脏俱全，用的了C++标准库中的：
+- std::function
+- std::shared_ptr
+- std::atomic
+- std::thread
+- std::chrono
 
+还用的了Pimpl惯用法。
