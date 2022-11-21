@@ -1,16 +1,16 @@
 基于C++标准库实现定时器Timer类
 ==============================
 
-定时器类是多线程编程中经常设计到的工具类
+定时器类是多线程编程中经常设计到的工具类  
 简单的定时器原理其实很简单（是不是有点GNU is not unix的味道;）：
 
 - 创建一个新线程
 - 在那个线程里等待
 - 等待指定时长后做任务
 
-python标准库中就有这么一个定时器类：threading.Timer
-此类表示一个操作应该在等待一定的时间之后运行 --- 相当于一个定时器。 
-Timer 类是 Thread 类的子类，因此可以像一个自定义线程一样工作。
+python标准库中就有这么一个定时器类：threading.Timer  
+此类表示一个操作应该在等待一定的时间之后运行 --- 相当于一个定时器。  
+Timer 类是 Thread 类的子类，因此可以像一个自定义线程一样工作。  
 与线程一样，通过调用 start() 方法启动定时器。 而 cancel() 方法可以停止计时器（在计时结束前）。
 
 例如：
@@ -24,7 +24,7 @@ t.start()  # after 30 seconds, "hello, world" will be printed
 ```
 
 **class threading.Timer(interval, function, args=None, kwargs=None)**
-    创建一个定时器，在经过 interval 秒的间隔事件后，将会用参数 args 和关键字参数 kwargs 调用 function。
+    创建一个定时器，在经过 interval 秒的间隔事件后，将会用参数 args 和关键字参数 kwargs 调用 function。  
     如果 args 为 None （默认值），则会使用一个空列表。如果 kwargs 为 None （默认值），则会使用一个空字典。
 
 **cancel()**
@@ -35,9 +35,9 @@ t.start()  # after 30 seconds, "hello, world" will be printed
 - 实现代码参考了Posix多线程编程里的alarm实例程序，为了方便大家对比C语言版本的实现，这里也以秒为单位
 - 避免一上来过多的涉及C++标准库中`<chrono>`的用法，使代码逻辑更清晰的集中在定时器相关的部分
 
-当然，作为一个在产品级代码中可用的Timer，精度至少应该在毫米级才行，所以文章最后也会给出精度在微秒的代码实现的链接。
+当然，作为一个在产品级代码中可用的Timer，精度至少应该在毫秒级才行，所以文章最后也会给出精度在微秒的代码实现的链接。
 
-首先，给出C++版本的Timer的接口定义：
+首先，给出C++版本的Timer的接口定义：  
 几乎完全仿照python的threading.Timer,
 
 ```cpp
@@ -56,7 +56,8 @@ public:
 - Start()：启动定时器
 - Cancel()：停止定时器并取消执行计时器将要执行的操作。
 
-在给出C++的实现前，我们先给出测试驱动程序。测试驱动程序来源于《Posix多线程程序设计》（英文原版书名为Programming with POSIX Threads）里的闹钟实例程序。而我接下来的介绍顺序源于我的编码实现顺序，如下：
+在给出C++的实现前，我们先给出测试驱动程序。测试驱动程序来源于《Posix多线程程序设计》（英文原版书名为Programming with POSIX Threads）里的闹钟实例程序。  
+而我接下来的介绍顺序源于我的编码实现顺序，如下：
 
 - 先给出书中基于pthread的多线程版本的实例代码，C代码
 - 将C版本的代码转化成等价的python代码，基于threading.Timer接口实现的版本
@@ -266,9 +267,10 @@ C++实现部分，基本上是C版本的代码抽离和封装，并把相关函�
 - std::chrono：C++标准库中时间相关的实现都在其中
 - C++ lambda：Timer线程的target函数，捕获了this->pimpl，保证了Timerl::Impl对象不会因为Timer对象的析构而析构
 
-这里还用的了Pimpl惯用法，虽然目前是把接口和实现都放在了头文件里，但标准的做法是Timer的成员函数实现和Timer::Impl实现都放到源文件中，这样头文件里可以去掉除了std::shared_ptr和std::function以外的依赖。
+这里还用的了Pimpl惯用法，虽然目前是把接口和实现都放在了头文件里，但标准的做法是Timer的成员函数实现和Timer::Impl实现都放到源文件中，  
+这样头文件里可以去掉除了std::shared_ptr和std::function以外的依赖。
 
-这个Timer类的实现优缺点是十分明显的：优点是代码简洁，一目了然，缺点是太过简洁，每个Timer需要一个线程去运行，系统资源消耗大。
+这个Timer类的实现优缺点是十分明显的：优点是代码简洁，一目了然，缺点是太过简洁，每个Timer需要一个线程去运行，系统资源消耗大。  
 于是就引出了基于条件变量版本的Timer，实现“参考”了《Posix多线程程序设计》3.3.4章节提到闹钟实例的最终版本（与其说“参考”，改成“直译”也不为过;）。
 
 照例，我先给出基于pthread的条件变量版本的实例代码，C代码：
@@ -808,7 +810,7 @@ void Timer::SetMessage(const std::string& message) {
 - 然后就是std::list替代了C手写的链表
 - std::mutex和std::conditon_variable替代了pthread_mutex_t和pthread_cond_t结构体和函数。
 
-最后，我来“吹一吹”实现C++版本Timer类的价值，以及可以改进优化的方向。
+最后，我来“吹一吹”实现C++版本Timer类的价值，以及可以改进优化的方向。  
 价值方面：
 
 - C版本的代码很优秀，用C++的面向对象方式实现，可以在C++工程中以组件的方式复用（主要是指条件变量版本，多线程版本过于简陋，不过好处是head only）
