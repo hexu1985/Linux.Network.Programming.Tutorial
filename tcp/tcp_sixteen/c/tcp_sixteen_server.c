@@ -3,6 +3,9 @@
 #include <string.h>
 #include <stdio.h>
 
+#define _GUN_SOURCE
+#include <getopt.h>
+
 #include "wrapsock.h"
 
 void sendall(int sockfd, const char *str)
@@ -81,17 +84,60 @@ void server(const char *interface, uint16_t port)
     Close(listenfd);
 }
 
+void print_usage(const char *prog) 
+{
+    printf("Usage: %s [--help] [--host HOST] [--port PORT]\n", prog);
+    puts("");
+    puts("Send and receive over TCP");
+    puts("");
+    puts("optional arguments:");
+    puts("\t-h, --help            show this help message and exit");
+    puts("\t--host HOST           interface the server listens at");
+    puts("\t--port PORT, -p PORT  TCP port (default 1060)");
+}
+
+void parse_arguments(int argc, char *argv[], const char **host, uint16_t *port)
+{
+    struct option long_options[] = {
+        {"host",    required_argument, 0,  0 },
+        {"port",    required_argument, 0,  0 },
+        {"help",    no_argument,       0, 'h'},
+        {0,         0,                 0,  0 }
+    };
+
+    int c;
+    while (1) {
+        int option_index = 0;
+        c = getopt_long(argc, argv, "h", long_options, &option_index);
+        if (c == -1)
+            break;
+
+        switch (c) {
+        case 0:
+            printf("option %s", long_options[option_index].name);
+            if (optarg)
+                printf(" with arg %s", optarg);
+            printf("\n");
+            if (long_options[option_index].name[0] == 'h')
+                *host = optarg;
+            else if (long_options[option_index].name[0] == 'p')
+                *port = atoi(optarg);
+            break;
+        case 'h':
+        case '?':
+            print_usage(argv[0]);
+            exit(1);
+        }
+    }
+
+}
+
 int main(int argc, char *argv[])
 {
     const char *host = "";
     uint16_t port = 1060;
 
-    if (argc > 1) {
-        host = argv[1];
-    }
-    if (argc > 2) {
-        port = atoi(argv[2]);
-    }
+    parse_arguments(argc, argv, &host, &port);
 
     server(host, port);
 

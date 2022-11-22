@@ -37,7 +37,7 @@ void server(const char *interface, uint16_t port) {
     }
 }
 
-DEFINE_string(host, "0.0.0.0", "interface the server listens at");
+DEFINE_string(host, "", "interface the server listens at");
 DEFINE_int32(port, 1060, "TCP port (default 1060)");
 
 int main(int argc, char *argv[]) {
