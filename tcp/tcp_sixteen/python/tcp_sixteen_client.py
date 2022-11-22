@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
-import sys
-import socket
+import argparse, socket
 
 def recvall(sock, length):
     data = b''
@@ -26,12 +25,11 @@ def client(host, port):
 
 
 if __name__ == '__main__':
-    host = "127.0.0.1"
-    port = 1060
+    parser = argparse.ArgumentParser(description='Send and receive over TCP')
+    parser.add_argument('--host', type=str, default='', help='host the client sends to')
+    parser.add_argument('--port', '-p', type=int, default=1060, help='TCP port (default 1060)')
+    args = parser.parse_args()
 
-    if len(sys.argv) > 1:
-        host = sys.argv[1]
-    if len(sys.argv) > 2:
-        port = sys.argv[2]
+    print("args: {}".format(args))
 
-    client(host, port)
+    client(args.host, args.port)
