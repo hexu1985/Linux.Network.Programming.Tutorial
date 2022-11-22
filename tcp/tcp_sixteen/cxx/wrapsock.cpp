@@ -249,7 +249,7 @@ std::string Socket::Recv(size_t len, int flags) {
     std::string buf;
     buf.resize(len);
     std::error_code ec;
-    int n = Recv(buf.data(), buf.length(), flags, ec);
+    int n = Recv((void *) buf.data(), buf.length(), flags, ec);
     if (ec) {
         ThrowSystemErrorWithCode(ec, "Recv() error");
     }

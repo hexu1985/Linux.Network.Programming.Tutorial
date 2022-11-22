@@ -1,5 +1,6 @@
 #include <string>
 #include <iostream>
+#include <gflags/gflags.h>
 #include "wrapsock.hpp"
 
 std::string recvall(Socket& sock, int length) {
@@ -36,16 +37,14 @@ void server(const char *interface, uint16_t port) {
     }
 }
 
+DEFINE_string(host, "0.0.0.0", "interface the server listens at");
+DEFINE_int32(port, 1060, "TCP port (default 1060)");
+
 int main(int argc, char *argv[]) {
-    const char* host = "127.0.0.1";
-    uint16_t port = 1060;
+    gflags::SetUsageMessage("Send and receive over TCP");
+    gflags::ParseCommandLineFlags(&argc, &argv, true);
 
-    if (argc > 1)
-        host = argv[1];
-    if (argc > 2)
-        port = atoi(argv[2]);
-
-    server(host, port);
+    server(FLAGS_host.c_str(), FLAGS_port);
 
     return 0;
 }
