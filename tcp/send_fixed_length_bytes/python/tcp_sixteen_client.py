@@ -13,7 +13,6 @@ def recvall(sock, length):
         data += more
     return data
 
-
 def client(host, port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.connect((host, port))
@@ -23,10 +22,9 @@ def client(host, port):
     print('The server said', repr(reply))
     sock.close()
 
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Send and receive over TCP')
-    parser.add_argument('--host', type=str, default='', help='host the client sends to')
+    parser.add_argument('--host', type=str, default='127.0.0.1', help='host the client sends to')
     parser.add_argument('--port', '-p', type=int, default=1060, help='TCP port (default 1060)')
     args = parser.parse_args()
 
