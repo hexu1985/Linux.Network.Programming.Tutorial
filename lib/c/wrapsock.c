@@ -8,7 +8,6 @@
 #include <errno.h>
 
 static char *sock_ntop(const struct sockaddr *addr, socklen_t addrlen);
-static ssize_t writen(int fd, const void *vptr, size_t n);
 
 int
 Accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen)
@@ -121,13 +120,6 @@ Socket(int family, int type, int protocol)
     return(n);
 }
 
-void
-Writen(int fd, const void *ptr, size_t nbytes)
-{
-	if (writen(fd, ptr, nbytes) != nbytes)
-		err_sys("writen error");
-}
-
 static char *sock_ntop(const struct sockaddr *addr, socklen_t addrlen)
 {
     char ipstr[128];
@@ -151,7 +143,7 @@ static char *sock_ntop(const struct sockaddr *addr, socklen_t addrlen)
     return (NULL);
 }
 
-static ssize_t writen(int fd, const void *vptr, size_t n)
+void SendAll(int fd, const void *vptr, size_t n)
 {
 	size_t nleft;
 	ssize_t nwritten;
@@ -160,16 +152,39 @@ static ssize_t writen(int fd, const void *vptr, size_t n)
 	ptr = (const char *) vptr;
 	nleft = n;
 	while (nleft > 0) {
-		if ((nwritten = write(fd, ptr, nleft)) <= 0) {
+		if ((nwritten = send(fd, ptr, nleft, 0)) <= 0) {
 			if (nwritten < 0 && errno == EINTR)
-				nwritten = 0;		/* and call write() again */
+				nwritten = 0;
 			else
-				return(-1);			/* error */
+                err_sys("send error");
 		}
 
 		nleft -= nwritten;
 		ptr   += nwritten;
 	}
-	return(n);
+}
+
+void RecvAll(int fd, void *vptr, size_t n)
+{
+	size_t nleft;
+	ssize_t nread;
+	const char *ptr;
+
+	ptr = (char *) vptr;
+	nleft = n;
+	while (nleft > 0) {
+		if ((nread = recv(fd, ptr, nleft, 0)) <= 0) {
+            if (nread == 0)
+                err_quit("was expecting %d bytes but only received"
+                        " %d bytes before the socket closed", n, n-nleft);
+            else if (errno == EINTR)
+                nread = 0;
+			else
+                err_sys("send error");
+		}
+
+		nleft -= nread;
+		ptr   += nread;
+	}
 }
 

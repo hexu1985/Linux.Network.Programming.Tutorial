@@ -8,35 +8,13 @@
 
 #include "wrapsock.h"
 
-void sendall(int sockfd, const char *str)
-{
-    Writen(sockfd, str, strlen(str));
-}
-
-void recvall(int sockfd, char *buf, int length)
-{
-    int ntotal = 0;
-    int nread = 0;
-    char *ptr = buf;
-
-    while (ntotal < length) {
-        nread = Recv(sockfd, ptr, length-ntotal, 0);
-        if (nread == 0) {
-            err_quit("was expecting %d bytes but only received"
-                    " %d bytes before the socket closed",
-                    length, ntotal);
-        }
-        ntotal += nread;
-        ptr += nread;
-    }
-}
-
 void client(const char *host, uint16_t port)
 {
     int sockfd;
     socklen_t len;
     struct sockaddr_in myaddr, servaddr;
     char reply[128];
+    const char *message = "Hi there, server";
 
     sockfd = Socket(AF_INET, SOCK_STREAM, 0);
 
@@ -52,8 +30,8 @@ void client(const char *host, uint16_t port)
     printf("Client has been assigned socket name %s\n", 
             Sock_ntop((struct sockaddr *) &myaddr, len));
 
-    sendall(sockfd, "Hi there, server");
-    recvall(sockfd, reply, 16);
+    SendAll(sockfd, message, strlen(message));
+    RecvAll(sockfd, reply, 16);
 
     printf("The server said %s\n", reply);
 
@@ -71,8 +49,8 @@ void print_usage(const char *prog)
     puts("");
     puts("optional arguments:");
     puts("\t-h, --help    show this help message and exit");
-    printf("\t--host HOST   host the client sends to (default %s)\n", DEFAULT_HOST);
-    printf("\t--port PORT   TCP port (default %d)\n", DEFAULT_PORT);
+    printf("\t--host HOST   IP address the client sends to (default %s)\n", DEFAULT_HOST);
+    printf("\t--port PORT   TCP port number (default %d)\n", DEFAULT_PORT);
 }
 
 void parse_arguments(int argc, char *argv[], const char **host, uint16_t *port)

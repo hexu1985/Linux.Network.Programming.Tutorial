@@ -8,29 +8,6 @@
 
 #include "wrapsock.h"
 
-void sendall(int sockfd, const char *str)
-{
-    Writen(sockfd, str, strlen(str));
-}
-
-void recvall(int sockfd, char *buf, int length)
-{
-    int ntotal = 0;
-    int nread = 0;
-    char *ptr = buf;
-
-    while (ntotal < length) {
-        nread = Recv(sockfd, ptr, length-ntotal, 0);
-        if (nread == 0) {
-            err_quit("was expecting %d bytes but only received"
-                    " %d bytes before the socket closed",
-                    length, ntotal);
-        }
-        ntotal += nread;
-        ptr += nread;
-    }
-}
-
 void server(const char *interface, uint16_t port)
 {
     int listenfd, connfd;
@@ -38,6 +15,7 @@ void server(const char *interface, uint16_t port)
     struct sockaddr_in myaddr, peeraddr, cliaddr, servaddr;
     const int on = 1;
     char message[128];
+    const char *reply = "Farewell, client";
 
     listenfd = Socket(AF_INET, SOCK_STREAM, 0);
 
@@ -74,9 +52,9 @@ void server(const char *interface, uint16_t port)
         Getpeername(connfd, (struct sockaddr *) &peeraddr, &len);
         printf("  Socket peer: %s\n", Sock_ntop((struct sockaddr *) &peeraddr, len));
 
-        recvall(connfd, message, 16);
+        RecvAll(connfd, message, 16);
         printf("  Incoming sixteen-octet message: %s\n", message);
-        sendall(connfd, "Farewell, client\n");
+        SendAll(connfd, reply, strlen(reply));
         Close(connfd);
         printf("  Reply sent, socket closed\n");
     }
@@ -95,8 +73,8 @@ void print_usage(const char *prog)
     puts("");
     puts("optional arguments:");
     puts("\t-h, --help    show this help message and exit");
-    printf("\t--host HOST   interface the server listens at (default %s)\n", DEFAULT_HOST);
-    printf("\t--port PORT   TCP port (default %d)\n", DEFAULT_PORT);
+    printf("\t--host HOST   IP address the server listens at (default %s)\n", DEFAULT_HOST);
+    printf("\t--port PORT   TCP port number (default %d)\n", DEFAULT_PORT);
 }
 
 void parse_arguments(int argc, char *argv[], const char **host, uint16_t *port)

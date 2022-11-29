@@ -43,5 +43,9 @@ int
 Socket(int family, int type, int protocol);
 
 void
-Writen(int fd, const void *ptr, size_t nbytes);
+SendAll(int fd, const void *ptr, size_t nbytes);
+
+void
+RecvAll(int fd, void *ptr, size_t nbytes);
+
 
