@@ -15,7 +15,6 @@ void server(const char *interface, uint16_t port)
     struct sockaddr_in myaddr, peeraddr, cliaddr, servaddr;
     const int on = 1;
     char message[128];
-    const char *reply = "Farewell, client";
 
     listenfd = Socket(AF_INET, SOCK_STREAM, 0);
 
@@ -54,7 +53,7 @@ void server(const char *interface, uint16_t port)
 
         RecvAll(connfd, message, 16);
         printf("  Incoming sixteen-octet message: %s\n", message);
-        SendAll(connfd, reply, strlen(reply));
+        SendMsg(connfd, "Farewell, client");
         Close(connfd);
         printf("  Reply sent, socket closed\n");
     }

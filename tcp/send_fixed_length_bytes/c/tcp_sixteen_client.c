@@ -14,7 +14,6 @@ void client(const char *host, uint16_t port)
     socklen_t len;
     struct sockaddr_in myaddr, servaddr;
     char reply[128];
-    const char *message = "Hi there, server";
 
     sockfd = Socket(AF_INET, SOCK_STREAM, 0);
 
@@ -30,7 +29,7 @@ void client(const char *host, uint16_t port)
     printf("Client has been assigned socket name %s\n", 
             Sock_ntop((struct sockaddr *) &myaddr, len));
 
-    SendAll(sockfd, message, strlen(message));
+    SendMsg(sockfd, "Hi there, server");
     RecvAll(sockfd, reply, 16);
 
     printf("The server said %s\n", reply);

@@ -46,6 +46,9 @@ void
 SendAll(int fd, const void *ptr, size_t nbytes);
 
 void
+SendMsg(int fd, const char *msg);
+
+void
 RecvAll(int fd, void *ptr, size_t nbytes);
 
 

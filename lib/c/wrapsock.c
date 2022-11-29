@@ -164,6 +164,11 @@ void SendAll(int fd, const void *vptr, size_t n)
 	}
 }
 
+void SendMsg(int fd, const char *msg)
+{
+    SendAll(fd, msg, strlen(msg));
+}
+
 void RecvAll(int fd, void *vptr, size_t n)
 {
 	size_t nleft;
