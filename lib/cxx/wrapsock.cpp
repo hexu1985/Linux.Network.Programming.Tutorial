@@ -11,7 +11,6 @@
 
 #include "error.hpp"
 
-
 // =============
 // SocketAddress
 // =============
@@ -237,27 +236,7 @@ void Socket::Listen(int backlog) {
     }
 }
 
-int Socket::Recv(void *buf, size_t len, int flags, std::error_code& ec) {
-    ssize_t n = recv(sockfd, buf, len, flags);
-    if (n < 0) {
-        ec.assign(errno, std::system_category());
-    }
-    return n;
-}
-
-std::string Socket::Recv(size_t len, int flags) {
-    std::string buf;
-    buf.resize(len);
-    std::error_code ec;
-    int n = Recv((void *) buf.data(), buf.length(), flags, ec);
-    if (ec) {
-        ThrowSystemErrorWithCode(ec, "Recv() error");
-    }
-    buf.resize(n);
-    return buf;
-}
-
-int Socket::Send(const void *buf, size_t len, int flags, std::error_code& ec) {
+int Socket::Send(const void* buf, size_t len, int flags, std::error_code& ec) {
     ssize_t n = send(sockfd, buf, len, flags);
     if (n < 0) {
         ec.assign(errno, std::system_category());
@@ -265,45 +244,63 @@ int Socket::Send(const void *buf, size_t len, int flags, std::error_code& ec) {
     return n;
 }
 
-void Socket::Send(const std::string& buf, int flags) {
-    std::error_code ec;
-    int n = Send(buf.data(), buf.length(), flags, ec);
-    if (ec) {
-        ThrowSystemErrorWithCode(ec, "Send() error");
-    }
-    if (n != buf.length()) {
-        ThrowRuntimeError("Send() error: uncompleted send, "
-                "%d bytes expected, %d bytes in fact",
-                n, buf.length());
-    }
-}
-
-int Socket::SendAll(const void *buf, size_t len, int flags, std::error_code& ec) {
+void Socket::SendAll(const void* buf, size_t len) {
     auto ptr = static_cast<const char*>(buf);
     auto nleft = len;
-    ec.clear();
+    auto nwritten = 0;
     while (nleft > 0) {
-        auto n = Send(ptr, nleft, flags, ec);
-        if (ec) {
-            if (ec == std::errc::interrupted) {
-                ec.clear();
-                n = 0;
+        std::error_code ec;
+        if ((nwritten = Send(ptr, nleft, 0, ec)) <= 0) {
+            if (nwritten < 0 && ec == std::errc::interrupted) {
+                nwritten = 0;
+            } else {
+                ThrowSystemErrorWithCode(ec, "Send() error");
             }
-            return len-nleft;
         }
 
-        nleft -= n;
-        ptr += n;
+        nleft -= nwritten;
+        ptr += nwritten;
     }
-    return len;
 }
 
-void Socket::SendAll(const std::string& buf, int flags) {
-    std::error_code ec;
-    int n = SendAll(buf.data(), buf.length(), flags, ec);
-    if (ec) {
-        ThrowSystemErrorWithCode(ec, "Send() error");
+void Socket::SendAll(const std::string& buf) {
+    SendAll(buf.data(), buf.size());
+}
+
+int Socket::Recv(void* buf, size_t len, int flags, std::error_code& ec) {
+    ssize_t n = recv(sockfd, buf, len, flags);
+    if (n < 0) {
+        ec.assign(errno, std::system_category());
     }
-    assert(n == buf.length());
+    return n;
+}
+
+void Socket::RecvAll(void* buf, size_t len) {
+    auto ptr = static_cast<char*>(buf);
+    auto nleft = len;
+    auto nread = 0;
+    while (nleft > 0) {
+        std::error_code ec;
+        if ((nread = Recv(ptr, nleft, 0, ec)) <= 0) {
+            if (nread == 0) {
+                ThrowRuntimeError("was expecting %d bytes but only received"
+                                  " %d bytes before the socket closed", len, len-nleft);
+            } else if(ec == std::errc::interrupted) {
+                nread = 0;
+            } else {
+                ThrowSystemErrorWithCode(ec, "Recv() error");
+            }
+        }
+
+        nleft -= nread;
+        ptr += nread;
+    }
+}
+
+std::string Socket::RecvAll(size_t len) {
+    std::string buf;
+    buf.resize(len);
+    RecvAll((void *) buf.data(), buf.size());
+    return buf;
 }
 

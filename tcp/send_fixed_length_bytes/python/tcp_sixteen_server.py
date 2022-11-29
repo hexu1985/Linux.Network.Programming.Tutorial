@@ -13,10 +13,10 @@ def recvall(sock, length):
         data += more
     return data
 
-def server(interface, port):
+def server(host, port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    sock.bind((interface, port))
+    sock.bind((host, port))
     sock.listen(1)
     print('Listening at', sock.getsockname())
     while True:
@@ -33,8 +33,8 @@ def server(interface, port):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Send and receive over TCP')
-    parser.add_argument('--host', type=str, default='0.0.0.0', help='interface the server listens at (default: %(default)s)')
-    parser.add_argument('--port', '-p', type=int, default=1060, help='TCP port (default: %(default)s)')
+    parser.add_argument('--host', type=str, default='0.0.0.0', help='IP address the server listens at (default: %(default)s)')
+    parser.add_argument('--port', '-p', type=int, default=1060, help='TCP port number (default: %(default)s)')
     args = parser.parse_args()
 
     print("args: {}".format(args))

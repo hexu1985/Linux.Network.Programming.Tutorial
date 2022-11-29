@@ -76,14 +76,13 @@ public:
 
     void Listen(int backlog);
 
-    int Recv(void *buf, size_t len, int flags, std::error_code& ec);
-    std::string Recv(size_t len, int flags=0);
+    int Send(const void* buf, size_t len, int flags, std::error_code& ec);
+    void SendAll(const void* buf, size_t len);
+    void SendAll(const std::string& buf);
 
-    int Send(const void *buf, size_t len, int flags, std::error_code& ec);
-    void Send(const std::string& buf, int flags=0);
-
-    int SendAll(const void *buf, size_t len, int flags, std::error_code& ec);
-    void SendAll(const std::string& buf, int flags=0);
+    int Recv(void* buf, size_t len, int flags, std::error_code& ec);
+    void RecvAll(void* buf, size_t len);
+    std::string RecvAll(size_t len);
 
     template <typename OptValT>
     void Setsockopt(int level, int optname, const OptValT& optval);

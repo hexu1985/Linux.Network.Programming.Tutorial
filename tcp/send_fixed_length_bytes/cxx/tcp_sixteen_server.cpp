@@ -4,24 +4,10 @@
 #include <gflags/gflags.h>
 #include "wrapsock.hpp"
 
-std::string recvall(Socket& sock, int length) {
-    std::string data;
-    while (data.length() < length) {
-        auto more = sock.Recv(length - data.length());
-        if (more.empty()) {
-            ThrowRuntimeError("was expecting %d bytes but only received"
-                           " %d bytes before the socket closed",
-                           length, data.length());
-        }
-        data += more;
-    }
-    return data;
-}
-
-void server(const char *interface, uint16_t port) {
+void server(const char *host, uint16_t port) {
     Socket sock(AF_INET, SOCK_STREAM);
     sock.Setsockopt(SOL_SOCKET, SO_REUSEADDR, 1);
-    sock.Bind(interface, port);
+    sock.Bind(host, port);
     sock.Listen(1);
     std::cout << "Listening at " << sock.Getsockname().ToString() << std::endl;
     while (true) {
@@ -30,7 +16,7 @@ void server(const char *interface, uint16_t port) {
         std::cout << "We have accepted a connection from " << sockname << std::endl;
         std::cout << "  Socket name: " << sc.Getsockname() << std::endl;
         std::cout << "  Socket peer: " << sc.Getpeername() << std::endl; 
-        auto message = recvall(sc, 16);
+        auto message = sc.RecvAll(16);
         std::cout << "  Incoming sixteen-octet message: " << message << std::endl;
         sc.SendAll("Farewell, client");
         sc.Close();
@@ -45,8 +31,8 @@ std::string usage(const char* prog) {
     return os.str();
 }
 
-DEFINE_string(host, "0.0.0.0", "interface the server listens at");
-DEFINE_int32(port, 1060, "TCP port");
+DEFINE_string(host, "0.0.0.0", "IP address the server listens at");
+DEFINE_int32(port, 1060, "TCP port number");
 
 int main(int argc, char *argv[]) {
     gflags::SetUsageMessage(usage(argv[0]));
