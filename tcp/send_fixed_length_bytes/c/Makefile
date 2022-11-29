@@ -3,9 +3,10 @@
 RM = rm -f
 CC = gcc
 CFLAGS = -Wall -g
-INCLUDE = 
+INCLUDE = -I./lib
 LDFLAGS = 
 LDPATH = 
+VPATH = ./lib
 
 PROGS =	tcp_sixteen_client tcp_sixteen_server
 
