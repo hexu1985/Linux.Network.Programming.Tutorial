@@ -27,7 +27,7 @@ def server(host, port):
 
 if __name__ == '__main__':
     parser = ArgumentParser(description='Transmit & receive a data stream')
-    parser.add_argument('--host', type=str, default='0.0.0.0', help='IP address or hostname (default: %(default)s)')
+    parser.add_argument('--host', type=str, default='0.0.0.0', help='IP address the server listens at (default: %(default)s)')
     parser.add_argument('--port', '-p', type=int, default=1060, help='TCP port number (default: %(default)s)')
     args = parser.parse_args()
 

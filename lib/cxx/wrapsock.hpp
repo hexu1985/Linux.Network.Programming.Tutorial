@@ -81,11 +81,14 @@ public:
     void SendAll(const std::string& buf);
 
     int Recv(void* buf, size_t len, int flags, std::error_code& ec);
+    int Recv(void* buf, size_t len, int flags=0);
     void RecvAll(void* buf, size_t len);
     std::string RecvAll(size_t len);
 
     template <typename OptValT>
     void Setsockopt(int level, int optname, const OptValT& optval);
+
+    void Shutdown(int how);
 
 private:
     Socket();

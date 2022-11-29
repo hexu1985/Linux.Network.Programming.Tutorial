@@ -45,10 +45,10 @@ SocketAddress::SocketAddress(int family, const char* host, uint16_t port) {
 
         int n = inet_pton(AF_INET, host, &sin->sin_addr); 
         if (n < 0) {
-            ThrowSystemError("SocketAddress(%d, %s, %d), inet_pton error", family, host, port);
+            ThrowSystemError("inet_pton(%d, %s, %d) error", family, host, port);
         }
         if (n == 0) {
-            ThrowRuntimeError("SocketAddress(%d, %s, %d), inet_pton error: Not in presentation format", family, host, port);
+            ThrowRuntimeError("inet_pton(%d, %s, %d) error: Not in presentation format", family, host, port);
         }
 
         addr = reinterpret_cast<struct sockaddr*>(sin);
@@ -101,7 +101,7 @@ std::string SocketAddress::ToString() const {
 
         char str[128];
         if (inet_ntop(AF_INET, &sin->sin_addr, str, sizeof(str)) == NULL) {
-            ThrowSystemError("ToString() error: AF_xxx: %d, len %d", addr->sa_family, addrlen);
+            ThrowSystemError("inet_ntop() error: AF_xxx: %d, len %d", addr->sa_family, addrlen);
         }
         std::ostringstream os;
         os << "('" << str << "', " << ntohs(sin->sin_port) << ")";
@@ -126,7 +126,7 @@ std::ostream& operator<<(std::ostream& out, const SocketAddress& sock_addr) {
 Socket::Socket(int family_, int type, int protocol): family(family_) {
     sockfd = socket(family, type, protocol);
     if (sockfd < 0) 
-        ThrowSystemError("Socket(%d, %d, %d) error", family, type, protocol);
+        ThrowSystemError("socket(%d, %d, %d) error", family, type, protocol);
 }
 
 Socket::Socket() {
@@ -168,7 +168,7 @@ again:
 #endif
                 goto again;
             else
-                ThrowSystemError("Accept() error");
+                ThrowSystemError("accept() error");
     }
     Socket sock;
     sock.family = family;
@@ -186,13 +186,13 @@ void Socket::Bind(const SocketAddress &sock_addr) {
     auto addrlen = *sock_addr.GetAddrLenPtr();
     if (bind(sockfd, addr, addrlen) < 0) {
         auto addr_str = sock_addr.ToString();
-        ThrowSystemError("Bind(%s) error", addr_str.c_str());
+        ThrowSystemError("bind(%s) error", addr_str.c_str());
     }
 }
 
 void Socket::Close() {
     if (close(sockfd) < 0)
-        ThrowSystemError("Close() error");
+        ThrowSystemError("close() error");
     sockfd = -1;
 }
 
@@ -206,7 +206,7 @@ void Socket::Connect(const SocketAddress &sock_addr) {
     auto addrlen = *sock_addr.GetAddrLenPtr();
     if (connect(sockfd, addr, addrlen) < 0) {
         auto addr_str = sock_addr.ToString();
-        ThrowSystemError("Connect(%s) error", addr_str.c_str());
+        ThrowSystemError("connect(%s) error", addr_str.c_str());
     }
 }
 
@@ -215,7 +215,7 @@ SocketAddress Socket::Getpeername() {
     auto addr = sock_addr.GetAddrPtr();
     auto addrlen = sock_addr.GetAddrLenPtr();
     if (getpeername(sockfd, addr, addrlen) < 0) {
-        ThrowSystemError("Getpeername() error");
+        ThrowSystemError("getpeername() error");
     }
     return sock_addr;
 }
@@ -225,14 +225,14 @@ SocketAddress Socket::Getsockname() {
     auto addr = sock_addr.GetAddrPtr();
     auto addrlen = sock_addr.GetAddrLenPtr();
     if (getsockname(sockfd, addr, addrlen) < 0) {
-        ThrowSystemError("Getsockname() error");
+        ThrowSystemError("getsockname() error");
     }
     return sock_addr;
 }
 
 void Socket::Listen(int backlog) {
     if (listen(sockfd, backlog) < 0) {
-        ThrowSystemError("Listen() error");
+        ThrowSystemError("listen() error");
     }
 }
 
@@ -275,6 +275,16 @@ int Socket::Recv(void* buf, size_t len, int flags, std::error_code& ec) {
     return n;
 }
 
+
+int Socket::Recv(void* buf, size_t len, int flags) {
+    std::error_code ec;
+    auto n = Recv(buf, len, flags, ec);
+    if (ec) {
+        ThrowSystemErrorWithCode(ec, "Recv() error");
+    }
+    return n;
+}
+
 void Socket::RecvAll(void* buf, size_t len) {
     auto ptr = static_cast<char*>(buf);
     auto nleft = len;
@@ -283,7 +293,7 @@ void Socket::RecvAll(void* buf, size_t len) {
         std::error_code ec;
         if ((nread = Recv(ptr, nleft, 0, ec)) <= 0) {
             if (nread == 0) {
-                ThrowRuntimeError("was expecting %d bytes but only received"
+                ThrowRuntimeError("RecvAll() error: was expecting %d bytes but only received"
                                   " %d bytes before the socket closed", len, len-nleft);
             } else if(ec == std::errc::interrupted) {
                 nread = 0;
@@ -304,3 +314,8 @@ std::string Socket::RecvAll(size_t len) {
     return buf;
 }
 
+void Socket::Shutdown(int how) {
+    if (shutdown(sockfd, how) < 0) {
+        ThrowSystemError("shutdown(%d) error", how);
+    }
+}
