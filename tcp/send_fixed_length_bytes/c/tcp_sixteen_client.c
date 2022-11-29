@@ -60,6 +60,9 @@ void client(const char *host, uint16_t port)
     Close(sockfd);
 }
 
+#define DEFAULT_HOST    "127.0.0.1"
+#define DEFAULT_PORT    1060
+
 void print_usage(const char *prog) 
 {
     printf("Usage: %s [--help] [--host HOST] [--port PORT]\n", prog);
@@ -67,9 +70,9 @@ void print_usage(const char *prog)
     puts("Send and receive over TCP");
     puts("");
     puts("optional arguments:");
-    puts("\t-h, --help            show this help message and exit");
-    puts("\t--host HOST           host the client sends to");
-    puts("\t--port PORT, -p PORT  TCP port (default 1060)");
+    puts("\t-h, --help    show this help message and exit");
+    printf("\t--host HOST   host the client sends to (default %s)\n", DEFAULT_HOST);
+    printf("\t--port PORT   TCP port (default %d)\n", DEFAULT_PORT);
 }
 
 void parse_arguments(int argc, char *argv[], const char **host, uint16_t *port)
@@ -94,9 +97,10 @@ void parse_arguments(int argc, char *argv[], const char **host, uint16_t *port)
             if (optarg)
                 printf(" with arg %s", optarg);
             printf("\n");
-            if (long_options[option_index].name[0] == 'h')
+            const char *option_name = long_options[option_index].name;
+            if (strcmp(option_name, "host") == 0)
                 *host = optarg;
-            else if (long_options[option_index].name[0] == 'p')
+            else if (strcmp(option_name, "port") == 0)
                 *port = atoi(optarg);
             break;
         case 'h':
@@ -110,8 +114,8 @@ void parse_arguments(int argc, char *argv[], const char **host, uint16_t *port)
 
 int main(int argc, char *argv[])
 {
-    const char *host = "127.0.0.1";
-    uint16_t port = 1060;
+    const char *host = DEFAULT_HOST;
+    uint16_t port = DEFAULT_PORT;
 
     parse_arguments(argc, argv, &host, &port);
 

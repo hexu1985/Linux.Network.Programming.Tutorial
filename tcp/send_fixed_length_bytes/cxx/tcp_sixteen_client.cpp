@@ -36,7 +36,7 @@ std::string usage(const char* prog) {
 }
 
 DEFINE_string(host, "127.0.0.1", "host the client sends to");
-DEFINE_int32(port, 1060, "TCP port (default 1060)");
+DEFINE_int32(port, 1060, "TCP port");
 
 int main(int argc, char *argv[]) {
     gflags::SetUsageMessage(usage(argv[0]));
