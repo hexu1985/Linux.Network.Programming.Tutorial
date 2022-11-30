@@ -16,7 +16,7 @@ Accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen)
 
 again:
     if ((n = accept(sockfd, addr, addrlen)) < 0) {
-#ifdef	EPROTO
+#ifdef EPROTO
         if (errno == EPROTO || errno == ECONNABORTED)
 #else
             if (errno == ECONNABORTED)
@@ -52,8 +52,8 @@ Connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen)
 void
 Getpeername(int sockfd, struct sockaddr *addr, socklen_t *addrlen)
 {
-	if (getpeername(sockfd, addr, addrlen) < 0)
-		err_sys("getpeername error");
+    if (getpeername(sockfd, addr, addrlen) < 0)
+        err_sys("getpeername error");
 }
 
 void
@@ -86,11 +86,11 @@ Listen(int sockfd, int backlog)
 ssize_t 
 Recv(int sockfd, void *buf, size_t len, int flags)
 {
-	ssize_t n;
+    ssize_t n;
 
-	if ((n = recv(sockfd, buf, len, flags)) < 0)
-		err_sys("recv error");
-	return(n);
+    if ((n = recv(sockfd, buf, len, flags)) < 0)
+        err_sys("recv error");
+    return(n);
 }
 
 void
@@ -143,53 +143,59 @@ static char *sock_ntop(const struct sockaddr *addr, socklen_t addrlen)
     return (NULL);
 }
 
-void SendAll(int fd, const void *vptr, size_t n)
+void SendAll(int sockfd, const void *vptr, size_t n)
 {
-	size_t nleft;
-	ssize_t nwritten;
-	const char *ptr;
+    size_t nleft;
+    ssize_t nwritten;
+    const char *ptr;
 
-	ptr = (const char *) vptr;
-	nleft = n;
-	while (nleft > 0) {
-		if ((nwritten = send(fd, ptr, nleft, 0)) <= 0) {
-			if (nwritten < 0 && errno == EINTR)
-				nwritten = 0;
-			else
+    ptr = (const char *) vptr;
+    nleft = n;
+    while (nleft > 0) {
+        if ((nwritten = send(sockfd, ptr, nleft, 0)) <= 0) {
+            if (nwritten < 0 && errno == EINTR)
+                nwritten = 0;
+            else
                 err_sys("send error");
-		}
+        }
 
-		nleft -= nwritten;
-		ptr   += nwritten;
-	}
+        nleft -= nwritten;
+        ptr   += nwritten;
+    }
 }
 
-void SendMsg(int fd, const char *msg)
+void SendMsg(int sockfd, const char *msg)
 {
-    SendAll(fd, msg, strlen(msg));
+    SendAll(sockfd, msg, strlen(msg));
 }
 
-void RecvAll(int fd, void *vptr, size_t n)
+void RecvAll(int sockfd, void *vptr, size_t n)
 {
-	size_t nleft;
-	ssize_t nread;
-	const char *ptr;
+    size_t nleft;
+    ssize_t nread;
+    char *ptr;
 
-	ptr = (char *) vptr;
-	nleft = n;
-	while (nleft > 0) {
-		if ((nread = recv(fd, ptr, nleft, 0)) <= 0) {
+    ptr = (char *) vptr;
+    nleft = n;
+    while (nleft > 0) {
+        if ((nread = recv(sockfd, ptr, nleft, 0)) <= 0) {
             if (nread == 0)
                 err_quit("was expecting %d bytes but only received"
                         " %d bytes before the socket closed", n, n-nleft);
             else if (errno == EINTR)
                 nread = 0;
-			else
+            else
                 err_sys("send error");
-		}
+        }
 
-		nleft -= nread;
-		ptr   += nread;
-	}
+        nleft -= nread;
+        ptr   += nread;
+    }
+}
+
+void Shutdown(int sockfd, int how)
+{
+    if (shutdown(sockfd, how) < 0)
+        err_sys("shutdown error");
 }
 

@@ -33,8 +33,7 @@ void server(const char *interface, uint16_t port)
 
     len = sizeof(myaddr);
     Getsockname(listenfd, (struct sockaddr *) &myaddr, &len);
-    printf("Client has been assigned socket name %s\n", 
-            Sock_ntop((struct sockaddr *) &myaddr, len));
+    printf("Listening at %s\n", Sock_ntop((struct sockaddr *) &myaddr, len));
 
     while (1) {
         printf("Waiting to accept a new connection\n");

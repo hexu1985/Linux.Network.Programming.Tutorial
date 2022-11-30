@@ -43,12 +43,14 @@ int
 Socket(int family, int type, int protocol);
 
 void
-SendAll(int fd, const void *ptr, size_t nbytes);
+SendAll(int sockfd, const void *ptr, size_t nbytes);
 
 void
-SendMsg(int fd, const char *msg);
+SendMsg(int sockfd, const char *msg);
 
 void
-RecvAll(int fd, void *ptr, size_t nbytes);
+RecvAll(int sockfd, void *ptr, size_t nbytes);
 
+void
+Shutdown(int sockfd, int how);
 
