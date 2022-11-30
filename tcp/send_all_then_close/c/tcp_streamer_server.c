@@ -57,7 +57,7 @@ void server(const char *interface, uint16_t port)
         message[msg_len] = '\0';
     }
 
-    puts("Message:");
+    puts("Message:\n");
     puts(message);
     Close(connfd);
     Close(listenfd);
