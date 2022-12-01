@@ -16,6 +16,8 @@
 //
 class SocketAddress {
 public:
+    SocketAddress() = default;
+
     SocketAddress(int family, uint16_t port=0);
     SocketAddress(int family, const char* host, uint16_t port);
 
@@ -48,6 +50,7 @@ std::ostream& operator<<(std::ostream& out, const SocketAddress& sock_addr);
 //
 class Socket {
 public:
+    Socket() = default;
     Socket(int family, int type, int protocol=0);
 
     ~Socket();
@@ -89,9 +92,6 @@ public:
     void Setsockopt(int level, int optname, const OptValT& optval);
 
     void Shutdown(int how);
-
-private:
-    Socket();
 
 private:
     int sockfd = -1;

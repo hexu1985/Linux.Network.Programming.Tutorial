@@ -1,7 +1,7 @@
 # Makefile
 
 CXX = g++
-CXXFLAGS = -g3 -Wall -Wextra -std=c++17
+CXXFLAGS = -g3 -Wall -Wextra
 INCLUDE = -I./lib
 LDFLAGS =
 LDLIBS = -lgflags

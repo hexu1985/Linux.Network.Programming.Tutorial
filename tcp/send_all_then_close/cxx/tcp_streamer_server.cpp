@@ -10,7 +10,13 @@ void server(const char *host, uint16_t port) {
     sock.Bind(host, port);
     sock.Listen(1);
     std::cout << "Listening at " << sock.Getsockname().ToString() << std::endl;
-    auto [sc, sockname] = sock.Accept();
+#if __cplusplus >= 201703L
+    auto [sc, sockname] = sock.Accept(); // only for c++17
+#else
+    Socket sc;
+    SocketAddress sockname;
+    std::tie(sc, sockname) = sock.Accept();
+#endif
     std::cout << "Accepted connection from " << sockname << std::endl;
     sc.Shutdown(SHUT_WR);
     std::string message;

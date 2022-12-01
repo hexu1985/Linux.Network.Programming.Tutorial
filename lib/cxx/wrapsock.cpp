@@ -129,9 +129,6 @@ Socket::Socket(int family_, int type, int protocol): family(family_) {
         ThrowSystemError("socket(%d, %d, %d) error", family, type, protocol);
 }
 
-Socket::Socket() {
-}
-
 Socket::~Socket() {
     if (sockfd >= 0) {
         close(sockfd);
