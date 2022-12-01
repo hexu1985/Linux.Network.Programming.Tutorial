@@ -12,7 +12,13 @@ void server(const char *host, uint16_t port) {
     std::cout << "Listening at " << sock.Getsockname().ToString() << std::endl;
     while (true) {
         std::cout << "Waiting to accept a new connection" << std::endl;
+#if __cplusplus >= 201703L
         auto [sc, sockname] = sock.Accept();
+#else
+        Socket sc;
+        SocketAddress sockname;
+        std::tie(sc, sockname) = sock.Accept();
+#endif
         std::cout << "We have accepted a connection from " << sockname << std::endl;
         std::cout << "  Socket name: " << sc.Getsockname() << std::endl;
         std::cout << "  Socket peer: " << sc.Getpeername() << std::endl; 
