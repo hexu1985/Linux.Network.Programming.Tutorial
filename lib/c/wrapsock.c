@@ -143,6 +143,12 @@ static char *sock_ntop(const struct sockaddr *addr, socklen_t addrlen)
     return (NULL);
 }
 
+void Send(int sockfd, const void *buf, size_t len, int flags)
+{
+    if (send(sockfd, buf, len, flags) != (ssize_t)len)
+        err_sys("send error");
+}
+
 void SendAll(int sockfd, const void *vptr, size_t n)
 {
     size_t nleft;

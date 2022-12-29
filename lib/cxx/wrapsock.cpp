@@ -241,6 +241,13 @@ int Socket::Send(const void* buf, size_t len, int flags, std::error_code& ec) {
     return n;
 }
 
+void Socket::Send(const void* buf, size_t len, int flags) {
+    std::error_code ec;
+    if (Send(buf, len, flags, ec) != (ssize_t) len) {
+        ThrowSystemErrorWithCode(ec, "Send() error");
+    }
+}
+
 void Socket::SendAll(const void* buf, size_t len) {
     auto ptr = static_cast<const char*>(buf);
     auto nleft = len;

@@ -80,6 +80,8 @@ public:
     void Listen(int backlog);
 
     int Send(const void* buf, size_t len, int flags, std::error_code& ec);
+    void Send(const void* buf, size_t len, int flags=0);
+
     void SendAll(const void* buf, size_t len);
     void SendAll(const std::string& buf);
 

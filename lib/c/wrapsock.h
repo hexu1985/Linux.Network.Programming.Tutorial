@@ -43,6 +43,9 @@ int
 Socket(int family, int type, int protocol);
 
 void
+Send(int sockfd, const void *buf, size_t len, int flags);
+
+void
 SendAll(int sockfd, const void *ptr, size_t nbytes);
 
 void

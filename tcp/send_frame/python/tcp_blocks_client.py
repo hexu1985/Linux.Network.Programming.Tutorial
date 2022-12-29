@@ -2,7 +2,8 @@
 
 import socket
 from argparse import ArgumentParser
-from common import *
+
+from blocks import *
 
 def client(host, port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -15,7 +16,7 @@ def client(host, port):
     sock.close()
 
 if __name__ == '__main__':
-    parser = ArgumentParser(description='Transmit & receive a data stream')
+    parser = ArgumentParser(description='Transmit & receive blocks over TCP')
     parser.add_argument('--host', type=str, default='127.0.0.1', help='IP address the client sends to (default: %(default)s)')
     parser.add_argument('--port', '-p', type=int, default=1060, help='TCP port number (default: %(default)s)')
     args = parser.parse_args()

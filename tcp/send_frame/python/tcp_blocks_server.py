@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 
+import socket
 from argparse import ArgumentParser
-from common import *
+
+from blocks import *
 
 def server(host, port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     sock.bind((host, port))
     sock.listen(1)
-    print('Run this script in another window with "-c" to connect')
     print('Listening at', sock.getsockname())
     sc, sockname = sock.accept()
     print('Accepted connection from', sockname)
@@ -22,7 +23,7 @@ def server(host, port):
     sock.close()
 
 if __name__ == '__main__':
-    parser = ArgumentParser(description='Transmit & receive a data stream')
+    parser = ArgumentParser(description='Transmit & receive blocks over TCP')
     parser.add_argument('--host', type=str, default='0.0.0.0', help='IP address the server listens at (default: %(default)s)')
     parser.add_argument('--port', '-p', type=int, default=1060, help='TCP port number (default: %(default)s)')
     args = parser.parse_args()
