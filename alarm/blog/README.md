@@ -94,6 +94,7 @@ void *alarm_thread (void *arg)
     free (alarm);
     return NULL;
 }
+
 int main (int argc, char *argv[])
 {
     int status;
