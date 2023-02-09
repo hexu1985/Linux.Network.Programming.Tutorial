@@ -57,3 +57,10 @@ RecvAll(int sockfd, void *ptr, size_t nbytes);
 void
 Shutdown(int sockfd, int how);
 
+void
+Sendto(int sockfd, const void *buf, size_t len, int flags,
+        const struct sockaddr *dest_addr, socklen_t addrlen);
+
+ssize_t 
+Recvfrom(int sockfd, void *buf, size_t len, int flags,
+        struct sockaddr *src_addr, socklen_t *addrlen);
