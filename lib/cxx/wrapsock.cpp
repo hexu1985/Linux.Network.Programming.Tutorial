@@ -16,16 +16,12 @@
 // =============
 //
 SocketAddress::SocketAddress(int family, uint16_t port) {
+    const char* host = "";
     switch (family) {
     case AF_INET: {
-        auto sin = new struct sockaddr_in;
-        memset(sin, 0x0, sizeof(*sin));
-        sin->sin_family = AF_INET;
-        sin->sin_port = htons(port);
-        sin->sin_addr.s_addr = htonl(INADDR_ANY);
-
-        addr = reinterpret_cast<struct sockaddr*>(sin);
-        addrlen = sizeof(*sin);
+        if (!assign_ipv4(host, port)) {
+            ThrowSystemError("assign_ipv4(%s, %d) error", host, port);
+        }
         break;
     }
     default:
@@ -36,23 +32,9 @@ SocketAddress::SocketAddress(int family, uint16_t port) {
 SocketAddress::SocketAddress(int family, const char* host, uint16_t port) {
     switch (family) {
     case AF_INET: {
-        if (host == nullptr || host[0] == '\0') host = "0.0.0.0";
-
-        auto sin = new struct sockaddr_in;
-        memset(sin, 0x0, sizeof(*sin));
-        sin->sin_family = AF_INET;
-        sin->sin_port = htons(port);
-
-        int n = inet_pton(AF_INET, host, &sin->sin_addr); 
-        if (n < 0) {
-            ThrowSystemError("inet_pton(%d, %s, %d) error", family, host, port);
+        if (!assign_ipv4(host, port)) {
+            ThrowSystemError("assign_ipv4(%s, %d) error", host, port);
         }
-        if (n == 0) {
-            ThrowRuntimeError("inet_pton(%d, %s, %d) error: Not in presentation format", family, host, port);
-        }
-
-        addr = reinterpret_cast<struct sockaddr*>(sin);
-        addrlen = sizeof(*sin);
         break;
     }
     default:
@@ -60,48 +42,48 @@ SocketAddress::SocketAddress(int family, const char* host, uint16_t port) {
     }
 }
 
-SocketAddress::~SocketAddress() {
-    if (addr == nullptr)
+SocketAddress::SocketAddress(const char* host, uint16_t port) {
+    if (assign_ipv4(host, port)) {
         return;
-
-    switch (addr->sa_family) {
-    case AF_INET: {
-        auto sin = reinterpret_cast<struct sockaddr_in*>(addr);
-        delete sin;
-        break;
     }
-    default:
-        assert(false && "invalid family type");
-        delete addr;
-    }
+    ThrowRuntimeError("SocketAddress(%s, %d) error: Host not in presentation format", host, port);
 }
 
-SocketAddress::SocketAddress(SocketAddress&& x) {
-    addr = x.addr;
-    addrlen = x.addrlen;
-    x.addr = nullptr;
-    x.addrlen = 0;
+bool SocketAddress::assign_ipv4(const char* host, uint16_t port) {
+    if (host == nullptr || host[0] == '\0') host = "0.0.0.0";
+
+    std::unique_ptr<struct sockaddr_in> sin(new struct sockaddr_in);
+    memset(sin.get(), 0x0, sizeof(struct sockaddr_in));
+    sin->sin_family = AF_INET;
+    sin->sin_port = htons(port);
+
+    int n = inet_pton(AF_INET, host, &sin->sin_addr); 
+    if (n <= 0) {
+        return false;
+    }
+
+    addr.reset(reinterpret_cast<char*>(sin.release()));
+    addrlen = sizeof(struct sockaddr_in);
+    return true;
 }
 
-SocketAddress& SocketAddress::operator=(SocketAddress&& x) {
-    using std::swap;
-    swap(addr, x.addr);
-    swap(addrlen, x.addrlen);
-
-    return *this;
+SocketAddress& SocketAddress::None() {
+    static SocketAddress none;
+    return none;
 }
 
 std::string SocketAddress::ToString() const {
     if (addr == nullptr)
         ThrowRuntimeError("ToString() error: addr is nullptr", "");
 
-    switch (addr->sa_family) {
+    int family = GetAddrPtr()->sa_family;
+    switch (family) {
     case AF_INET: {
-        struct sockaddr_in *sin = (struct sockaddr_in *) addr;
+        struct sockaddr_in *sin = (struct sockaddr_in *) addr.get();
 
         char str[128];
         if (inet_ntop(AF_INET, &sin->sin_addr, str, sizeof(str)) == NULL) {
-            ThrowSystemError("inet_ntop() error: AF_xxx: %d, len %d", addr->sa_family, addrlen);
+            ThrowSystemError("inet_ntop() error: AF_xxx: %d, len %d", family, addrlen);
         }
         std::ostringstream os;
         os << "('" << str << "', " << ntohs(sin->sin_port) << ")";
@@ -109,7 +91,7 @@ std::string SocketAddress::ToString() const {
     }
 
     default:
-        PrintRuntimeError("ToString() error: unknown AF_xxx: %d, len %d", addr->sa_family, addrlen);
+        PrintRuntimeError("ToString() error: unknown AF_xxx: %d, len %d", family, addrlen);
         return "unknown";
     }
 }
@@ -178,7 +160,7 @@ void Socket::Bind(const char* host, uint16_t port) {
     Bind(sock_addr);
 }
 
-void Socket::Bind(const SocketAddress &sock_addr) {
+void Socket::Bind(const SocketAddress& sock_addr) {
     auto addr = sock_addr.GetAddrPtr();
     auto addrlen = *sock_addr.GetAddrLenPtr();
     if (bind(sockfd, addr, addrlen) < 0) {
@@ -198,7 +180,7 @@ void Socket::Connect(const char* host, uint16_t port) {
     Connect(sock_addr);
 }
 
-void Socket::Connect(const SocketAddress &sock_addr) {
+void Socket::Connect(const SocketAddress& sock_addr) {
     auto addr = sock_addr.GetAddrPtr();
     auto addrlen = *sock_addr.GetAddrLenPtr();
     if (connect(sockfd, addr, addrlen) < 0) {
@@ -241,11 +223,15 @@ int Socket::Send(const void* buf, size_t len, int flags, std::error_code& ec) {
     return n;
 }
 
-void Socket::Send(const void* buf, size_t len, int flags) {
+void Socket::Send(const void* buf, size_t len) {
     std::error_code ec;
-    if (Send(buf, len, flags, ec) != (ssize_t) len) {
+    if (Send(buf, len, 0, ec) != (ssize_t) len) {
         ThrowSystemErrorWithCode(ec, "Send() error");
     }
+}
+
+void Socket::Send(const std::string& buf) {
+    Send(buf.data(), buf.size());
 }
 
 void Socket::SendAll(const void* buf, size_t len) {
@@ -279,14 +265,21 @@ int Socket::Recv(void* buf, size_t len, int flags, std::error_code& ec) {
     return n;
 }
 
-
-int Socket::Recv(void* buf, size_t len, int flags) {
+int Socket::Recv(void* buf, size_t len) {
     std::error_code ec;
-    auto n = Recv(buf, len, flags, ec);
+    auto n = Recv(buf, len, 0, ec);
     if (ec) {
         ThrowSystemErrorWithCode(ec, "Recv() error");
     }
     return n;
+}
+
+std::string Socket::Recv(size_t len) {
+    std::string buf;
+    buf.resize(len);
+    auto n = Recv((void *) buf.data(), buf.size());
+    buf.resize(n);
+    return buf;
 }
 
 void Socket::RecvAll(void* buf, size_t len) {
@@ -322,4 +315,53 @@ void Socket::Shutdown(int how) {
     if (shutdown(sockfd, how) < 0) {
         ThrowSystemError("shutdown(%d) error", how);
     }
+}
+
+int Socket::SendTo(const void* buf, size_t len, int flags, const SocketAddress& dest_addr, std::error_code& ec) {
+    auto addr = dest_addr.GetAddrPtr();
+    auto addrlen = *dest_addr.GetAddrLenPtr();
+    ssize_t n = sendto(sockfd, buf, len, flags, addr, addrlen);
+    if (n < 0) {
+        ec.assign(errno, std::system_category());
+    }
+    return n;
+}
+
+void Socket::SendTo(const void* buf, size_t len, const SocketAddress& dest_addr) {
+    std::error_code ec;
+    if (SendTo(buf, len, 0, dest_addr, ec) != (ssize_t) len) {
+        ThrowSystemErrorWithCode(ec, "SendTo() error");
+    }
+}
+
+void Socket::SendTo(const std::string& buf, const SocketAddress& dest_addr) {
+    SendTo(buf.data(), buf.size(), dest_addr);
+}
+
+int Socket::RecvFrom(void* buf, size_t len, int flags, SocketAddress& src_addr, std::error_code& ec) {
+    auto addr = src_addr.GetAddrPtr();
+    auto addrlen = src_addr.GetAddrLenPtr();
+    ssize_t n = recvfrom(sockfd, buf, len, flags, addr, addrlen);
+    if (n < 0) {
+        ec.assign(errno, std::system_category());
+    }
+    return n;
+}
+
+int Socket::RecvFrom(void* buf, size_t len, SocketAddress& src_addr) {
+    std::error_code ec;
+    auto n = RecvFrom(buf, len, 0, src_addr, ec);
+    if (ec) {
+        ThrowSystemErrorWithCode(ec, "RecvFrom() error");
+    }
+    return n;
+}
+
+std::tuple<std::string, SocketAddress> Socket::RecvFrom(size_t len) {
+    std::string buf;
+    buf.resize(len);
+    SocketAddress src_addr(family);
+    auto n = RecvFrom((void *) buf.data(), buf.size(), src_addr);
+    buf.resize(n);
+    return std::tuple<std::string, SocketAddress>(std::move(buf), std::move(src_addr));
 }

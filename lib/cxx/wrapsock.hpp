@@ -7,6 +7,7 @@
 #include <string>
 #include <iosfwd>
 #include <tuple>
+#include <memory>
 
 #include "error.hpp"
 
@@ -17,20 +18,23 @@
 class SocketAddress {
 public:
     SocketAddress() = default;
+    ~SocketAddress() = default;
 
     SocketAddress(int family, uint16_t port=0);
     SocketAddress(int family, const char* host, uint16_t port);
-
-    ~SocketAddress();
+    SocketAddress(const char* host, uint16_t port);
 
     SocketAddress(const SocketAddress&) = delete;
     SocketAddress& operator=(const SocketAddress&) = delete;
 
-    SocketAddress(SocketAddress&& x);
-    SocketAddress& operator=(SocketAddress&& x);
+    SocketAddress(SocketAddress&& x) = default;
+    SocketAddress& operator=(SocketAddress&& x) = default;
 
-    struct sockaddr* GetAddrPtr() { return addr; }
-    const struct sockaddr* GetAddrPtr() const { return addr; }
+    bool assign_ipv4(const char* host, uint16_t port);
+    static SocketAddress& None();
+
+    struct sockaddr* GetAddrPtr() { return reinterpret_cast<sockaddr*>(addr.get()); }
+    const struct sockaddr* GetAddrPtr() const { return reinterpret_cast<const sockaddr*>(addr.get()); }
 
     socklen_t* GetAddrLenPtr() { return &addrlen; }
     const socklen_t* GetAddrLenPtr() const { return &addrlen; }
@@ -38,7 +42,7 @@ public:
     std::string ToString() const;
 
 private:
-    sockaddr* addr = nullptr;
+    std::unique_ptr<char[]> addr;
     socklen_t addrlen = 0;
 };
 
@@ -64,12 +68,12 @@ public:
     std::tuple<Socket, SocketAddress> Accept();
 
     void Bind(const char* host, uint16_t port);
-    void Bind(const SocketAddress &sock_addr);
+    void Bind(const SocketAddress& sock_addr);
 
     void Close();
 
     void Connect(const char* host, uint16_t port);
-    void Connect(const SocketAddress &sock_addr);
+    void Connect(const SocketAddress& sock_addr);
 
     int GetDescriptor() { return sockfd; }
     int GetFamily() { return family; }
@@ -80,13 +84,16 @@ public:
     void Listen(int backlog);
 
     int Send(const void* buf, size_t len, int flags, std::error_code& ec);
-    void Send(const void* buf, size_t len, int flags=0);
+    void Send(const void* buf, size_t len);
+    void Send(const std::string& buf);
 
     void SendAll(const void* buf, size_t len);
     void SendAll(const std::string& buf);
 
     int Recv(void* buf, size_t len, int flags, std::error_code& ec);
-    int Recv(void* buf, size_t len, int flags=0);
+    int Recv(void* buf, size_t len);
+    std::string Recv(size_t len);
+
     void RecvAll(void* buf, size_t len);
     std::string RecvAll(size_t len);
 
@@ -94,6 +101,14 @@ public:
     void Setsockopt(int level, int optname, const OptValT& optval);
 
     void Shutdown(int how);
+
+    int SendTo(const void* buf, size_t len, int flags, const SocketAddress& dest_addr, std::error_code& ec);
+    void SendTo(const void* buf, size_t len, const SocketAddress& dest_addr);
+    void SendTo(const std::string& buf, const SocketAddress& dest_addr); 
+
+    int RecvFrom(void* buf, size_t len, int flags, SocketAddress& src_addr, std::error_code& ec);
+    int RecvFrom(void* buf, size_t len, SocketAddress& src_addr);
+    std::tuple<std::string, SocketAddress> RecvFrom(size_t len);
 
 private:
     int sockfd = -1;
