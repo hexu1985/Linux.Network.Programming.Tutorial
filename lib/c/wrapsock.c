@@ -135,6 +135,20 @@ static char *sock_ntop(const struct sockaddr *addr, socklen_t addrlen)
         return(str);
     }
 
+#ifdef	AF_UNIX
+	case AF_UNIX: {
+		struct sockaddr_un *unp = (struct sockaddr_un *) addr;
+
+			/* OK to have no pathname bound to the socket: happens on
+			   every connect() unless client calls bind() first. */
+		if (unp->sun_path[0] == 0)
+			strcpy(str, "(no pathname bound)");
+		else
+			snprintf(str, sizeof(str), "%s", unp->sun_path);
+		return(str);
+	}
+#endif
+
     default:
         snprintf(str, sizeof(str), "sock_ntop: unknown AF_xxx: %d, len %d",
                 addr->sa_family, addrlen);

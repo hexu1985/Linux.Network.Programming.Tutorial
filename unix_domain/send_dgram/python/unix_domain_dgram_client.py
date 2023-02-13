@@ -10,6 +10,8 @@ def client(path):
     """ Run "a Unix domain socket client """
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
     mypath = "/tmp/python_unix_socket_client.{}".format(os.getpid())
+    if os.path.exists(mypath):
+        os.unlink(mypath)
     sock.bind(mypath)
     text = 'The time is {}'.format(datetime.now())
     data = text.encode('ascii')
@@ -23,7 +25,7 @@ def client(path):
 
 if __name__ == '__main__':
     parser = ArgumentParser(description='Send and receive UNIX domain datagram locally')
-    parser.add_argument('--path', type=str, default="/tmp/python_unix_socket_server", help='unix-domain address the client sends to (default: %(default)s)')
+    parser.add_argument('--path', type=str, default="/tmp/unix_domain_socket_server", help='unix-domain address the client sends to (default: %(default)s)')
     args = parser.parse_args()
 
     print("args: {}".format(args))
