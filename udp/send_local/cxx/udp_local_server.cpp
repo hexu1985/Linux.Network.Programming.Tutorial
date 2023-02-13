@@ -9,7 +9,7 @@
 
 void server(uint16_t port) {
     Socket sock(AF_INET, SOCK_DGRAM);
-    sock.Bind("127.0.0.1", port);
+    sock.Bind(SocketAddress("127.0.0.1", port));
     std::cout << "Listening at " << sock.Getsockname().ToString() << std::endl;
     while (true) {
 #if __cplusplus >= 201703L

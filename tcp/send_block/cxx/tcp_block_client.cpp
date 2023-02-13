@@ -7,7 +7,7 @@
 
 void client(const char* host, uint16_t port) {
     Socket sock(AF_INET, SOCK_STREAM);
-    sock.Connect(host, port);
+    sock.Connect(SocketAddress(host, port));
     sock.Shutdown(SHUT_RD);
     PutBlock(sock, "Beautiful is better than ugly.");
     PutBlock(sock, "Explicit is better than implicit.");

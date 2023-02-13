@@ -6,7 +6,7 @@
 
 void client(const char* host, uint16_t port) {
     Socket sock(AF_INET, SOCK_STREAM);
-    sock.Connect(host, port);
+    sock.Connect(SocketAddress(host, port));
     std::cout << "Client has been assigned socket name " << sock.Getsockname() << std::endl;
     sock.SendAll("Hi there, server");
     auto reply = sock.RecvAll(16);

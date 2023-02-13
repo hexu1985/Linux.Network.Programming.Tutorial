@@ -7,7 +7,7 @@
 void server(const char *host, uint16_t port) {
     Socket sock(AF_INET, SOCK_STREAM);
     sock.Setsockopt(SOL_SOCKET, SO_REUSEADDR, 1);
-    sock.Bind(host, port);
+    sock.Bind(SocketAddress(host, port));
     sock.Listen(1);
     std::cout << "Listening at " << sock.Getsockname().ToString() << std::endl;
     while (true) {

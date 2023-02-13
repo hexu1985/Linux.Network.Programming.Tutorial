@@ -25,3 +25,13 @@ std::string error_message(const char* file, unsigned int line, const char* forma
         msg += '\n'; \
         std::cerr << msg; \
     } while (false)
+
+#define PrintSystemError(...) \
+    do { \
+        int errno_save = errno; \
+        auto msg = error_message(__FILE__, __LINE__, __VA_ARGS__); \
+        msg += ": "; \
+        msg += strerror(errno_save); \
+        msg += '\n'; \
+        std::cerr << msg; \
+    } while (false)

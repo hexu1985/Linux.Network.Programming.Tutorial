@@ -3,6 +3,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <sys/un.h>
 
 #include <string>
 #include <iosfwd>
@@ -20,9 +21,9 @@ public:
     SocketAddress() = default;
     ~SocketAddress() = default;
 
-    SocketAddress(int family, uint16_t port=0);
-    SocketAddress(int family, const char* host, uint16_t port);
+    SocketAddress(int family);
     SocketAddress(const char* host, uint16_t port);
+    SocketAddress(const char* path);
 
     SocketAddress(const SocketAddress&) = delete;
     SocketAddress& operator=(const SocketAddress&) = delete;
@@ -30,8 +31,8 @@ public:
     SocketAddress(SocketAddress&& x) = default;
     SocketAddress& operator=(SocketAddress&& x) = default;
 
-    bool assign_ipv4(const char* host, uint16_t port);
-    static SocketAddress& None();
+    bool SetIPv4(const char* host, uint16_t port);
+    bool SetUNIX(const char* path);
 
     struct sockaddr* GetAddrPtr() { return reinterpret_cast<sockaddr*>(addr.get()); }
     const struct sockaddr* GetAddrPtr() const { return reinterpret_cast<const sockaddr*>(addr.get()); }
@@ -47,6 +48,8 @@ private:
 };
 
 std::ostream& operator<<(std::ostream& out, const SocketAddress& sock_addr);
+std::string to_string(const SocketAddress& sock_addr);
+
 
 // ======
 // Socket
@@ -67,12 +70,10 @@ public:
 
     std::tuple<Socket, SocketAddress> Accept();
 
-    void Bind(const char* host, uint16_t port);
     void Bind(const SocketAddress& sock_addr);
 
     void Close();
 
-    void Connect(const char* host, uint16_t port);
     void Connect(const SocketAddress& sock_addr);
 
     int GetDescriptor() { return sockfd; }

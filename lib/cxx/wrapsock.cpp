@@ -15,41 +15,40 @@
 // SocketAddress
 // =============
 //
-SocketAddress::SocketAddress(int family, uint16_t port) {
-    const char* host = "";
+SocketAddress::SocketAddress(int family) {
     switch (family) {
-    case AF_INET: {
-        if (!assign_ipv4(host, port)) {
-            ThrowSystemError("assign_ipv4(%s, %d) error", host, port);
-        }
+    case AF_INET:
+        addr.reset(reinterpret_cast<char *>(new struct sockaddr_in));
+        addrlen = sizeof(struct sockaddr_in);
         break;
-    }
+
+#ifdef	AF_UNIX
+    case AF_UNIX:
+        addr.reset(reinterpret_cast<char *>(new struct sockaddr_un));
+        addrlen = sizeof(struct sockaddr_un);
+        break;
+#endif
+
     default:
         ThrowRuntimeError("SocketAddress(%d) error: unsupport family type", family);
     }
 }
 
-SocketAddress::SocketAddress(int family, const char* host, uint16_t port) {
-    switch (family) {
-    case AF_INET: {
-        if (!assign_ipv4(host, port)) {
-            ThrowSystemError("assign_ipv4(%s, %d) error", host, port);
-        }
-        break;
-    }
-    default:
-        ThrowRuntimeError("SocketAddress(%d, %s, %d) error: unsupport family type", family, host, port);
-    }
-}
-
 SocketAddress::SocketAddress(const char* host, uint16_t port) {
-    if (assign_ipv4(host, port)) {
+    if (SetIPv4(host, port)) {
         return;
     }
-    ThrowRuntimeError("SocketAddress(%s, %d) error: Host not in presentation format", host, port);
+    ThrowRuntimeError("SocketAddress(%s, %d) error: SetIPv4 failed!", host, port);
 }
 
-bool SocketAddress::assign_ipv4(const char* host, uint16_t port) {
+SocketAddress::SocketAddress(const char* path) {
+    if (SetUNIX(path)) {
+        return;
+    }
+    ThrowRuntimeError("SocketAddress(%s) error: SetUNIX failed!", path);
+}
+
+bool SocketAddress::SetIPv4(const char* host, uint16_t port) {
     if (host == nullptr || host[0] == '\0') host = "0.0.0.0";
 
     std::unique_ptr<struct sockaddr_in> sin(new struct sockaddr_in);
@@ -57,8 +56,12 @@ bool SocketAddress::assign_ipv4(const char* host, uint16_t port) {
     sin->sin_family = AF_INET;
     sin->sin_port = htons(port);
 
-    int n = inet_pton(AF_INET, host, &sin->sin_addr); 
-    if (n <= 0) {
+    int n = inet_pton(AF_INET, host, &sin->sin_addr);
+    if (n < 0) {
+        PrintSystemError("inet_pton(%s) error", host);
+        return false;
+    } else if (n == 0) {
+        PrintRuntimeError("inet_pton(%s) error: Not in presentation format", host);
         return false;
     }
 
@@ -67,9 +70,21 @@ bool SocketAddress::assign_ipv4(const char* host, uint16_t port) {
     return true;
 }
 
-SocketAddress& SocketAddress::None() {
-    static SocketAddress none;
-    return none;
+bool SocketAddress::SetUNIX(const char* path) {
+    if (path == nullptr || path[0] == '\0') return false;
+
+    std::unique_ptr<struct sockaddr_un> sun(new struct sockaddr_un);
+    memset(sun.get(), 0x0, sizeof(struct sockaddr_un));
+    sun->sun_family = AF_UNIX;
+    if (strlen(path) >= sizeof(sun->sun_path)) {
+        PrintRuntimeError("SetUNIX error: path [%s] is too long", path);
+        return false;
+    }
+    strcpy(sun->sun_path, path);
+
+    addr.reset(reinterpret_cast<char*>(sun.release()));
+    addrlen = sizeof(struct sockaddr_un);
+    return true;
 }
 
 std::string SocketAddress::ToString() const {
@@ -83,12 +98,28 @@ std::string SocketAddress::ToString() const {
 
         char str[128];
         if (inet_ntop(AF_INET, &sin->sin_addr, str, sizeof(str)) == NULL) {
-            ThrowSystemError("inet_ntop() error: AF_xxx: %d, len %d", family, addrlen);
+            PrintRuntimeError("inet_ntop() error: AF_xxx: %d, len %d", family, addrlen);
+            return std::string();
         }
         std::ostringstream os;
         os << "('" << str << "', " << ntohs(sin->sin_port) << ")";
         return os.str();
     }
+
+#ifdef	AF_UNIX
+	case AF_UNIX: {
+		struct sockaddr_un *unp = (struct sockaddr_un *) addr.get();
+
+        char str[128];
+			/* OK to have no pathname bound to the socket: happens on
+			   every connect() unless client calls bind() first. */
+		if (unp->sun_path[0] == 0)
+			strcpy(str, "(no pathname bound)");
+		else
+			snprintf(str, sizeof(str), "%s", unp->sun_path);
+		return(str);
+	}
+#endif
 
     default:
         PrintRuntimeError("ToString() error: unknown AF_xxx: %d, len %d", family, addrlen);
@@ -99,6 +130,10 @@ std::string SocketAddress::ToString() const {
 std::ostream& operator<<(std::ostream& out, const SocketAddress& sock_addr) {
     out << sock_addr.ToString();
     return out;
+}
+
+std::string to_string(const SocketAddress& sock_addr) {
+    return sock_addr.ToString();
 }
 
 // ======
@@ -155,11 +190,6 @@ again:
     return std::tuple<Socket, SocketAddress>(std::move(sock), std::move(sock_addr));
 }
 
-void Socket::Bind(const char* host, uint16_t port) {
-    SocketAddress sock_addr(family, host, port);
-    Bind(sock_addr);
-}
-
 void Socket::Bind(const SocketAddress& sock_addr) {
     auto addr = sock_addr.GetAddrPtr();
     auto addrlen = *sock_addr.GetAddrLenPtr();
@@ -173,11 +203,6 @@ void Socket::Close() {
     if (close(sockfd) < 0)
         ThrowSystemError("close() error");
     sockfd = -1;
-}
-
-void Socket::Connect(const char* host, uint16_t port) {
-    SocketAddress sock_addr(family, host, port);
-    Connect(sock_addr);
 }
 
 void Socket::Connect(const SocketAddress& sock_addr) {
