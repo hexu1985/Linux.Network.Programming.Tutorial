@@ -20,6 +20,7 @@ void server(const char *path)
 
 	sockfd = Socket(AF_UNIX, SOCK_DGRAM, 0);
 
+    unlink(path);
     memset(&servaddr, 0x0, sizeof(servaddr));
     servaddr.sun_family = AF_UNIX;
     strcpy(servaddr.sun_path, path);
