@@ -4,6 +4,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <sys/un.h>
+#include <linux/netlink.h>
 
 #include "error.h"
 

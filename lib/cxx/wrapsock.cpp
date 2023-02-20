@@ -34,14 +34,14 @@ SocketAddress::SocketAddress(int family) {
     }
 }
 
-SocketAddress::SocketAddress(const char* host, uint16_t port) {
+SocketAddress::SocketAddress(const char* host, uint16_t port, AddressFamily<AF_INET>) {
     if (SetIPv4(host, port)) {
         return;
     }
     ThrowRuntimeError("SocketAddress(%s, %d) error: SetIPv4 failed!", host, port);
 }
 
-SocketAddress::SocketAddress(const char* path) {
+SocketAddress::SocketAddress(const char* path, AddressFamily<AF_UNIX>) {
     if (SetUNIX(path)) {
         return;
     }

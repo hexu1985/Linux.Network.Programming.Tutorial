@@ -12,6 +12,11 @@
 
 #include "error.hpp"
 
+template <int I>
+struct AddressFamily {
+    static constexpr int family = I;
+};
+
 // =============
 // SocketAddress
 // =============
@@ -22,8 +27,9 @@ public:
     ~SocketAddress() = default;
 
     SocketAddress(int family);
-    SocketAddress(const char* host, uint16_t port);
-    SocketAddress(const char* path);
+    SocketAddress(const char* host, uint16_t port, AddressFamily<AF_INET> family=AddressFamily<AF_INET>{});
+    SocketAddress(const char* path, AddressFamily<AF_UNIX> family=AddressFamily<AF_UNIX>{});
+    SocketAddress();
 
     SocketAddress(const SocketAddress&) = delete;
     SocketAddress& operator=(const SocketAddress&) = delete;
