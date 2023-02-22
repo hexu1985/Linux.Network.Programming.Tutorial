@@ -4,6 +4,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <sys/un.h>
+#include <linux/netlink.h>
 
 #include <string>
 #include <iosfwd>
@@ -29,7 +30,7 @@ public:
     SocketAddress(int family);
     SocketAddress(const char* host, uint16_t port, AddressFamily<AF_INET> family=AddressFamily<AF_INET>{});
     SocketAddress(const char* path, AddressFamily<AF_UNIX> family=AddressFamily<AF_UNIX>{});
-    SocketAddress();
+    SocketAddress(uint32_t groups, uint32_t pid, AddressFamily<AF_NETLINK> family=AddressFamily<AF_NETLINK>{});
 
     SocketAddress(const SocketAddress&) = delete;
     SocketAddress& operator=(const SocketAddress&) = delete;
@@ -39,6 +40,7 @@ public:
 
     bool SetIPv4(const char* host, uint16_t port);
     bool SetUNIX(const char* path);
+    bool SetNetlink(uint32_t groups, uint32_t pid);
 
     struct sockaddr* GetAddrPtr() { return reinterpret_cast<sockaddr*>(addr.get()); }
     const struct sockaddr* GetAddrPtr() const { return reinterpret_cast<const sockaddr*>(addr.get()); }

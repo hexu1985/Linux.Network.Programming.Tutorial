@@ -48,6 +48,13 @@ SocketAddress::SocketAddress(const char* path, AddressFamily<AF_UNIX>) {
     ThrowRuntimeError("SocketAddress(%s) error: SetUNIX failed!", path);
 }
 
+SocketAddress::SocketAddress(uint32_t groups, uint32_t pid, AddressFamily<AF_NETLINK>) {
+    if (SetNetlink(groups, pid)) {
+        return;
+    }
+    ThrowRuntimeError("SocketAddress(%u, %u) error: SetNetlink failed!", groups, pid);
+}
+
 bool SocketAddress::SetIPv4(const char* host, uint16_t port) {
     if (host == nullptr || host[0] == '\0') host = "0.0.0.0";
 
@@ -84,6 +91,18 @@ bool SocketAddress::SetUNIX(const char* path) {
 
     addr.reset(reinterpret_cast<char*>(sun.release()));
     addrlen = sizeof(struct sockaddr_un);
+    return true;
+}
+
+bool SocketAddress::SetNetlink(uint32_t groups, uint32_t pid) {
+    std::unique_ptr<struct sockaddr_nl> snl(new struct sockaddr_nl);
+    memset(snl.get(), 0x0, sizeof(struct sockaddr_nl));
+    snl->nl_family = AF_NETLINK;
+    snl->nl_groups = groups;
+    snl->nl_pid = pid;
+
+    addr.reset(reinterpret_cast<char*>(snl.release()));
+    addrlen = sizeof(struct sockaddr_nl);
     return true;
 }
 

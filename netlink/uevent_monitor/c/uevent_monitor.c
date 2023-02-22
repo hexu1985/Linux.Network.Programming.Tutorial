@@ -35,14 +35,15 @@ void MonitorNetlinkUevent()
             continue;
         }
 
-        count++;
-        printf("***********************msg %d start***********************\n", count);
         for(i=0;i<len;i++) {
             if(*(buf+i)=='\0')
                 buf[i]='\n';
             else if(!isprint(*(buf+i)))
                 buf[i] = '.';
         }
+
+        count++;
+        printf("***********************msg %d start***********************\n", count);
         printf("received %d bytes\n%s\n",len,buf);
         printf("***********************msg %d ends************************\n", count);
         fflush(stdout);
