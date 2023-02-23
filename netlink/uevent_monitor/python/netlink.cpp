@@ -26,7 +26,7 @@ public:
     }
 };
 
-PYBIND11_MODULE(uevent_monitor, m) {
+PYBIND11_MODULE(netlink, m) {
     py::class_<NetlinkUeventMonitor>(m, "NetlinkUeventMonitor")
         .def(py::init<uint32_t>())
         .def("recv", &NetlinkUeventMonitor::recv);

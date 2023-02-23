@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
-from build import uevent_monitor
+import netlink
 
 def MonitorNetlinkUevent():
-    monitor = uevent_monitor.NetlinkUeventMonitor(0)
+    monitor = netlink.NetlinkUeventMonitor(0)
     count = 0
     while True:
         data = monitor.recv(4096)

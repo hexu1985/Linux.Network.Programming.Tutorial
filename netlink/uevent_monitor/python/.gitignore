@@ -1,1 +1,5 @@
 pybind11/
+dist/
+build/
+*.so
+*.spec
