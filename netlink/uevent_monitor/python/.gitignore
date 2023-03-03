@@ -1,5 +1,6 @@
 pybind11/
 dist/
 build/
+venv/
 *.so
 *.spec
