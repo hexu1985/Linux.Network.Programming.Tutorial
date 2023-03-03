@@ -4,6 +4,7 @@ import time
 import signal
 import threading
 import netlink
+import datetime
 
 def receive_signal(signum, stack):
     print('Received:', signum)
@@ -29,6 +30,7 @@ def main():
     t = threading.Thread(target=MonitorNetlinkUevent, daemon=True)
     t.start()
     while True:
+        print("uevent_monitor is running..., {}".format(datetime.datetime.now()))
         time.sleep(1)
     print("***********************ends************************")
 
