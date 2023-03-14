@@ -1,5 +1,6 @@
 #pragma once
 
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -66,3 +67,9 @@ Sendto(int sockfd, const void *buf, size_t len, int flags,
 ssize_t 
 Recvfrom(int sockfd, void *buf, size_t len, int flags,
         struct sockaddr *src_addr, socklen_t *addrlen);
+
+void
+Gethostname(char *name, size_t len);
+
+const char *
+Inet_ntop(int family, const void *addrptr, char *strptr, socklen_t len);

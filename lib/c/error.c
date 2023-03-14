@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <stdarg.h>
+#include <netdb.h>
 
 static void	err_doit(int, const char *, va_list);
 
@@ -99,3 +100,4 @@ err_doit(int errnoflag, const char *fmt, va_list ap)
     fflush(stderr);
 	return;
 }
+

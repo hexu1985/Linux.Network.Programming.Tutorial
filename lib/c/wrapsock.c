@@ -237,3 +237,22 @@ Recvfrom(int sockfd, void *buf, size_t len, int flags,
 		err_sys("recvfrom error");
 	return(n);
 }
+
+void
+Gethostname(char *name, size_t len)
+{
+    if (gethostname(name, len) < 0)
+        err_sys("gethostname error");
+}
+
+const char *
+Inet_ntop(int family, const void *addrptr, char *strptr, socklen_t len)
+{
+    const char  *ptr;
+
+    if (strptr == NULL)     /* check for old code */
+        err_quit("NULL 3rd argument to inet_ntop");
+    if ( (ptr = inet_ntop(family, addrptr, strptr, len)) == NULL)
+        err_sys("inet_ntop error");     /* sets errno */
+    return(ptr);
+}
