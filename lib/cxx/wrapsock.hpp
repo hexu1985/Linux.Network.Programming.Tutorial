@@ -130,3 +130,4 @@ void Socket::Setsockopt(int level, int optname, const OptValT& optval) {
         ThrowSystemError("Setsockopt(%d, %d) error", level, optname);
 }
 
+std::string Gethostname();

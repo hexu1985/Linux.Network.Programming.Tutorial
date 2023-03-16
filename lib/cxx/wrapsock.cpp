@@ -409,3 +409,10 @@ std::tuple<std::string, SocketAddress> Socket::RecvFrom(size_t len) {
     buf.resize(n);
     return std::tuple<std::string, SocketAddress>(std::move(buf), std::move(src_addr));
 }
+
+std::string Gethostname() {
+    char host_name[128] = {0};
+    if (gethostname(host_name, sizeof(host_name)) < 0)
+        return "";
+    return host_name;
+}
