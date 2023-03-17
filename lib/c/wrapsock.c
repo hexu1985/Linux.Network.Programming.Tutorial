@@ -7,7 +7,7 @@
 #include <string.h>
 #include <errno.h>
 
-static char *sock_ntop(const struct sockaddr *addr, socklen_t addrlen);
+static const char *sock_ntop(const struct sockaddr *addr, socklen_t addrlen);
 
 int
 Accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen)
@@ -100,10 +100,10 @@ Setsockopt(int sockfd, int level, int optname, const void *optval, socklen_t opt
         err_sys("setsockopt error");
 }
 
-char *
+const char *
 Sock_ntop(const struct sockaddr *addr, socklen_t addrlen)
 {
-    char *ptr;
+    const char *ptr;
 
     if ((ptr = sock_ntop(addr, addrlen)) == NULL)
         err_sys("sock_ntop error"); /* inet_ntop() sets errno */
@@ -120,7 +120,7 @@ Socket(int family, int type, int protocol)
     return(n);
 }
 
-static char *sock_ntop(const struct sockaddr *addr, socklen_t addrlen)
+static const char *sock_ntop(const struct sockaddr *addr, socklen_t addrlen)
 {
     char ipstr[128];
     static char str[128];
@@ -255,4 +255,19 @@ Inet_ntop(int family, const void *addrptr, char *strptr, socklen_t len)
     if ( (ptr = inet_ntop(family, addrptr, strptr, len)) == NULL)
         err_sys("inet_ntop error");     /* sets errno */
     return(ptr);
+}
+
+uint16_t
+Sock_port(const struct sockaddr *addr, socklen_t addrlen) 
+{
+    switch (addr->sa_family) {
+    case AF_INET: {
+        struct sockaddr_in *sin = (struct sockaddr_in *) addr;
+        return ntohs(sin->sin_port);
+    }
+
+    default:
+        err_msg("Sock_port: not support AF_xxx: %d, len %d", addr->sa_family, addrlen);
+        return 0;
+    }
 }

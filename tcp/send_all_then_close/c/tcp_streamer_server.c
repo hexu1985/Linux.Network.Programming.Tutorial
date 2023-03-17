@@ -12,7 +12,7 @@ void server(const char *interface, uint16_t port)
 {
     int listenfd, connfd;
     socklen_t len;
-    struct sockaddr_in myaddr, peeraddr, cliaddr, servaddr;
+    struct sockaddr_in myaddr, cliaddr, servaddr;
     const int on = 1;
 
     listenfd = Socket(AF_INET, SOCK_STREAM, 0);

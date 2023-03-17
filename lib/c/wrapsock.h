@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdint.h>
+
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -39,7 +41,7 @@ Recv(int sockfd, void *buf, size_t len, int flags);
 void
 Setsockopt(int sockfd, int level, int optname, const void *optval, socklen_t optlen);
 
-char *
+const char *
 Sock_ntop(const struct sockaddr *addr, socklen_t addrlen);
 
 int 
@@ -73,3 +75,6 @@ Gethostname(char *name, size_t len);
 
 const char *
 Inet_ntop(int family, const void *addrptr, char *strptr, socklen_t len);
+
+uint16_t
+Sock_port(const struct sockaddr *addr, socklen_t addrlen);
