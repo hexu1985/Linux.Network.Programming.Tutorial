@@ -1,8 +1,7 @@
 #include <stdio.h>
 #include <assert.h>
 
-#include "wrapsock.h"
-#include "wrapnetdb.h"
+#include "unp.h"
 
 void get_addr_info_list(const char *remote_host)
 {

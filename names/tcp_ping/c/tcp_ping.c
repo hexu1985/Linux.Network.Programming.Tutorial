@@ -7,7 +7,7 @@
 #define _GUN_SOURCE
 #include <getopt.h>
 
-#include "wrapsock.h"
+#include "unp.h"
 
 void connect_to(const char *host, const char *serv)
 {

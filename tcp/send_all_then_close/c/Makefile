@@ -2,11 +2,10 @@
 
 RM = rm -f
 CC = gcc
-CFLAGS = -Wall -g
+CFLAGS = -Wall -g -Werror
 INCLUDE = -I./lib
-LDFLAGS = 
-LDPATH = 
-VPATH = ./lib
+LDFLAGS = -lunp
+LDPATH = -L./lib
 
 PROGS =	tcp_streamer_client tcp_streamer_server
 
@@ -21,9 +20,9 @@ clean:
 %.o:%.c
 	$(CC) -o $@ -c $< $(CFLAGS) $(INCLUDE)
 
-tcp_streamer_client: tcp_streamer_client.o wrapsock.o error.o
+tcp_streamer_client: tcp_streamer_client.o
 	$(CC) -o $@ $^ $(CFLAGS) $(INCLUDE) $(LDFLAGS) $(LDPATH)
 
-tcp_streamer_server: tcp_streamer_server.o wrapsock.o error.o
+tcp_streamer_server: tcp_streamer_server.o
 	$(CC) -o $@ $^ $(CFLAGS) $(INCLUDE) $(LDFLAGS) $(LDPATH)
 

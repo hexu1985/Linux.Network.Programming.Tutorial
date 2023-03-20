@@ -2,11 +2,10 @@
 
 RM = rm -f
 CC = gcc
-CFLAGS = -Wall -g
+CFLAGS = -Wall -g -Werror
 INCLUDE = -I./lib
-LDFLAGS = 
-LDPATH = 
-VPATH = ./lib
+LDFLAGS = -lunp
+LDPATH = -L./lib
 
 PROGS =	get_addr_info
 
@@ -21,7 +20,7 @@ clean:
 %.o:%.c
 	$(CC) -o $@ -c $< $(CFLAGS) $(INCLUDE)
 
-get_addr_info: get_addr_info.o wrapsock.o wrapnetdb.o error.o
+get_addr_info: get_addr_info.o
 	$(CC) -o $@ $^ $(CFLAGS) $(INCLUDE) $(LDFLAGS) $(LDPATH)
 
 

@@ -5,7 +5,7 @@
 #include <ctype.h>
 #include <unistd.h>
 
-#include "wrapsock.h"
+#include "unp.h"
 
 #define MAX_BYTES   4096
 

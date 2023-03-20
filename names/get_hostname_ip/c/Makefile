@@ -2,11 +2,10 @@
 
 RM = rm -f
 CC = gcc
-CFLAGS = -Wall -g
+CFLAGS = -Wall -g -Werror
 INCLUDE = -I./lib
-LDFLAGS = 
-LDPATH = 
-VPATH = ./lib
+LDFLAGS = -lunp
+LDPATH = -L./lib
 
 PROGS =	print_hostname_ip
 
@@ -21,7 +20,7 @@ clean:
 %.o:%.c
 	$(CC) -o $@ -c $< $(CFLAGS) $(INCLUDE)
 
-print_hostname_ip: print_hostname_ip.o wrapnetdb.o wrapsock.o error.o
+print_hostname_ip: print_hostname_ip.o
 	$(CC) -o $@ $^ $(CFLAGS) $(INCLUDE) $(LDFLAGS) $(LDPATH)
 
 

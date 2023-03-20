@@ -2,11 +2,10 @@
 
 RM = rm -f
 CC = gcc
-CFLAGS = -Wall -g
+CFLAGS = -Wall -g -Werror
 INCLUDE = -I./lib
-LDFLAGS = 
-LDPATH = 
-VPATH = ./lib
+LDFLAGS = -lunp
+LDPATH = -L./lib
 
 PROGS =	uevent_monitor
 
@@ -21,6 +20,6 @@ clean:
 %.o:%.c
 	$(CC) -o $@ -c $< $(CFLAGS) $(INCLUDE)
 
-uevent_monitor: uevent_monitor.o wrapsock.o error.o
+uevent_monitor: uevent_monitor.o 
 	$(CC) -o $@ $^ $(CFLAGS) $(INCLUDE) $(LDFLAGS) $(LDPATH)
 

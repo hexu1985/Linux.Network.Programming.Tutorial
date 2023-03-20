@@ -2,11 +2,10 @@
 
 RM = rm -f
 CC = gcc
-CFLAGS = -Wall -g
+CFLAGS = -Wall -g -Werror
 INCLUDE = -I./lib
-LDFLAGS = 
-LDPATH = 
-VPATH = ./lib
+LDFLAGS = -lunp
+LDPATH = -L./lib
 
 PROGS =	unix_domain_dgram_client unix_domain_dgram_server
 
@@ -21,9 +20,9 @@ clean:
 %.o:%.c
 	$(CC) -o $@ -c $< $(CFLAGS) $(INCLUDE)
 
-unix_domain_dgram_client: unix_domain_dgram_client.o wrapsock.o error.o
+unix_domain_dgram_client: unix_domain_dgram_client.o
 	$(CC) -o $@ $^ $(CFLAGS) $(INCLUDE) $(LDFLAGS) $(LDPATH)
 
-unix_domain_dgram_server: unix_domain_dgram_server.o wrapsock.o error.o
+unix_domain_dgram_server: unix_domain_dgram_server.o
 	$(CC) -o $@ $^ $(CFLAGS) $(INCLUDE) $(LDFLAGS) $(LDPATH)
 

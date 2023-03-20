@@ -1,8 +1,7 @@
 #include <stdio.h>
 #include <assert.h>
 
-#include "wrapsock.h"
-#include "wrapnetdb.h"
+#include "unp.h"
 
 void get_host_by_name(const char *remote_host)
 {
