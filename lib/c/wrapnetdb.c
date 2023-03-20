@@ -7,13 +7,32 @@
 #include <stdio.h>
 
 struct hostent *
-Gethostbyname(const char *name) {
+Gethostbyname(const char *name)
+{
     struct hostent *hptr;
     if ((hptr = gethostbyname(name)) == NULL) {
         hostent_err_msg(h_errno, "gethostbyname(%s) error", name);
         exit(1);
     }
     return hptr;
+}
+
+void 
+Getaddrinfo(const char *node, const char *service,
+        const struct addrinfo *hints, struct addrinfo **res)
+{
+    int n;
+    if ((n = getaddrinfo(node, service, hints, res)) != 0) {
+        addrinfo_err_msg(n, "getaddrinfo(%s, %s) error", 
+                (node ? node : ""), (service ? service : "")); 
+        exit(1);
+    }
+}
+
+void 
+Freeaddrinfo(struct addrinfo *res)
+{
+    freeaddrinfo(res);
 }
 
 enum netdb_error_type {

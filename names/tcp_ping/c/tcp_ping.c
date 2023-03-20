@@ -14,7 +14,7 @@ void connect_to(const char *host, const char *serv)
     int             sockfd, n;
     struct addrinfo hints, *res;
 
-    bzero(&hints, sizeof(struct addrinfo));
+    memset(&hints, 0, sizeof(struct addrinfo));
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_protocol = 0;

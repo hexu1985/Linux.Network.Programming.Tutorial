@@ -130,4 +130,17 @@ void Socket::Setsockopt(int level, int optname, const OptValT& optval) {
         ThrowSystemError("Setsockopt(%d, %d) error", level, optname);
 }
 
+// =================
+// Utility Functions
+// =================
+//
+
+std::string Inet_ntop(int family, const void *addrptr, std::error_code& ec);
+std::string Inet_ntop(int family, const void *addrptr);
+
+std::string Sock_ntop(const struct sockaddr *addr, socklen_t addrlen, std::error_code& ec);
+std::string Sock_ntop(const struct sockaddr *addr, socklen_t addrlen);
+
+std::string Gethostname(std::error_code& ec);
 std::string Gethostname();
+
