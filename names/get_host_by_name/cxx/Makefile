@@ -1,11 +1,10 @@
 # Makefile
 
 CXX = g++
-CXXFLAGS = -g3 -Wall -Wextra
+CXXFLAGS = -g3 -Wall -Wextra -Werror
 INCLUDE = -I./lib
-LDFLAGS =
-LDLIBS = -lgflags
-VPATH = ./lib
+LDFLAGS = -lunp
+LDPATH = -L./lib
 
 PROGS =	get_host_by_name
 
@@ -20,6 +19,6 @@ clean:
 %.o:%.cpp
 	$(CXX) -o $@ -c $< $(CXXFLAGS) $(INCLUDE)
 
-get_host_by_name: get_host_by_name.o wrapnetdb.o error.o
-	$(CXX) -o $@ $^ $(LDFLAGS) $(LDLIBS)
+get_host_by_name: get_host_by_name.o
+	$(CXX) -o $@ $^ $(LDFLAGS) $(LDPATH)
 

@@ -1,11 +1,10 @@
 # Makefile
 
 CXX = g++
-CXXFLAGS = -g3 -Wall -Wextra
+CXXFLAGS = -g3 -Wall -Wextra -Werror
 INCLUDE = -I./lib
-LDFLAGS =
-LDLIBS = -lgflags
-VPATH = ./lib
+LDFLAGS = -lgflags -lunp
+LDPATH = -L./lib
 
 PROGS =	tcp_streamer_client tcp_streamer_server
 
@@ -20,8 +19,8 @@ clean:
 %.o:%.cpp
 	$(CXX) -o $@ -c $< $(CXXFLAGS) $(INCLUDE)
 
-tcp_streamer_client: tcp_streamer_client.o wrapsock.o error.o
-	$(CXX) -o $@ $^ $(LDFLAGS) $(LDLIBS)
+tcp_streamer_client: tcp_streamer_client.o
+	$(CXX) -o $@ $^ $(LDFLAGS) $(LDPATH)
 
-tcp_streamer_server: tcp_streamer_server.o wrapsock.o error.o
-	$(CXX) -o $@ $^ $(LDFLAGS) $(LDLIBS)
+tcp_streamer_server: tcp_streamer_server.o
+	$(CXX) -o $@ $^ $(LDFLAGS) $(LDPATH)

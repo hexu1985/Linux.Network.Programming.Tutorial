@@ -1,11 +1,10 @@
 # Makefile
 
 CXX = g++
-CXXFLAGS = -g3 -Wall -Wextra
+CXXFLAGS = -g3 -Wall -Wextra -Werror
 INCLUDE = -I./lib
-LDFLAGS =
-LDLIBS = -lgflags
-VPATH = ./lib
+LDFLAGS = -lgflags -lunp
+LDPATH = -L./lib
 
 PROGS =	unix_domain_dgram_client unix_domain_dgram_server
 
@@ -20,8 +19,8 @@ clean:
 %.o:%.cpp
 	$(CXX) -o $@ -c $< $(CXXFLAGS) $(INCLUDE)
 
-unix_domain_dgram_client: unix_domain_dgram_client.o wrapsock.o error.o
-	$(CXX) -o $@ $^ $(LDFLAGS) $(LDLIBS)
+unix_domain_dgram_client: unix_domain_dgram_client.o
+	$(CXX) -o $@ $^ $(LDFLAGS) $(LDPATH)
 
-unix_domain_dgram_server: unix_domain_dgram_server.o wrapsock.o error.o
-	$(CXX) -o $@ $^ $(LDFLAGS) $(LDLIBS)
+unix_domain_dgram_server: unix_domain_dgram_server.o
+	$(CXX) -o $@ $^ $(LDFLAGS) $(LDPATH)

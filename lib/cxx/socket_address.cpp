@@ -1,0 +1,120 @@
+#include "socket_address.hpp"
+#include "error.hpp"
+#include "utility.hpp"
+
+#include <unistd.h>
+#include <errno.h>
+
+#include <cstring>
+#include <cassert>
+
+#include <utility>
+#include <sstream>
+
+SocketAddress::SocketAddress(int family) {
+    switch (family) {
+    case AF_INET:
+        addr.reset(reinterpret_cast<char *>(new struct sockaddr_in));
+        addrlen = sizeof(struct sockaddr_in);
+        break;
+
+#ifdef	AF_UNIX
+    case AF_UNIX:
+        addr.reset(reinterpret_cast<char *>(new struct sockaddr_un));
+        addrlen = sizeof(struct sockaddr_un);
+        break;
+#endif
+
+    default:
+        ThrowRuntimeError("SocketAddress(%d) error: unsupport family type", family);
+    }
+}
+
+SocketAddress::SocketAddress(const char* host, uint16_t port, AddressFamily<AF_INET>) {
+    if (SetIPv4(host, port)) {
+        return;
+    }
+    ThrowRuntimeError("SocketAddress(%s, %d) error: SetIPv4 failed!", host, port);
+}
+
+SocketAddress::SocketAddress(const char* path, AddressFamily<AF_UNIX>) {
+    if (SetUNIX(path)) {
+        return;
+    }
+    ThrowRuntimeError("SocketAddress(%s) error: SetUNIX failed!", path);
+}
+
+SocketAddress::SocketAddress(uint32_t groups, uint32_t pid, AddressFamily<AF_NETLINK>) {
+    if (SetNetlink(groups, pid)) {
+        return;
+    }
+    ThrowRuntimeError("SocketAddress(%u, %u) error: SetNetlink failed!", groups, pid);
+}
+
+bool SocketAddress::SetIPv4(const char* host, uint16_t port) {
+    if (host == nullptr || host[0] == '\0') host = "0.0.0.0";
+
+    std::unique_ptr<struct sockaddr_in> sin(new struct sockaddr_in);
+    memset(sin.get(), 0x0, sizeof(struct sockaddr_in));
+    sin->sin_family = AF_INET;
+    sin->sin_port = htons(port);
+
+    int n = inet_pton(AF_INET, host, &sin->sin_addr);
+    if (n < 0) {
+        PrintSystemError("inet_pton(%s) error", host);
+        return false;
+    } else if (n == 0) {
+        PrintRuntimeError("inet_pton(%s) error: Not in presentation format", host);
+        return false;
+    }
+
+    addr.reset(reinterpret_cast<char*>(sin.release()));
+    addrlen = sizeof(struct sockaddr_in);
+    return true;
+}
+
+bool SocketAddress::SetUNIX(const char* path) {
+    if (path == nullptr || path[0] == '\0') return false;
+
+    std::unique_ptr<struct sockaddr_un> sun(new struct sockaddr_un);
+    memset(sun.get(), 0x0, sizeof(struct sockaddr_un));
+    sun->sun_family = AF_UNIX;
+    if (strlen(path) >= sizeof(sun->sun_path)) {
+        PrintRuntimeError("SetUNIX error: path [%s] is too long", path);
+        return false;
+    }
+    strcpy(sun->sun_path, path);
+
+    addr.reset(reinterpret_cast<char*>(sun.release()));
+    addrlen = sizeof(struct sockaddr_un);
+    return true;
+}
+
+bool SocketAddress::SetNetlink(uint32_t groups, uint32_t pid) {
+    std::unique_ptr<struct sockaddr_nl> snl(new struct sockaddr_nl);
+    memset(snl.get(), 0x0, sizeof(struct sockaddr_nl));
+    snl->nl_family = AF_NETLINK;
+    snl->nl_groups = groups;
+    snl->nl_pid = pid;
+
+    addr.reset(reinterpret_cast<char*>(snl.release()));
+    addrlen = sizeof(struct sockaddr_nl);
+    return true;
+}
+
+std::string SocketAddress::ToString() const {
+    if (addr == nullptr)
+        ThrowRuntimeError("ToString() error: addr is nullptr", "");
+
+    return Sock_ntop((const struct sockaddr *) addr.get(), addrlen);
+}
+
+std::ostream& operator<<(std::ostream& out, const SocketAddress& sock_addr) {
+    out << sock_addr.ToString();
+    return out;
+}
+
+std::string to_string(const SocketAddress& sock_addr) {
+    return sock_addr.ToString();
+}
+

@@ -1,11 +1,10 @@
 # Makefile
 
 CXX = g++
-CXXFLAGS = -g3 -Wall -Wextra
+CXXFLAGS = -g3 -Wall -Wextra -Werror
 INCLUDE = -I./lib
-LDFLAGS =
-LDLIBS = -lgflags
-VPATH = ./lib
+LDFLAGS = -lunp
+LDPATH = -L./lib
 
 PROGS =	print_hostname_ip
 
@@ -20,6 +19,6 @@ clean:
 %.o:%.cpp
 	$(CXX) -o $@ -c $< $(CXXFLAGS) $(INCLUDE)
 
-print_hostname_ip: print_hostname_ip.o wrapsock.o wrapnetdb.o error.o
-	$(CXX) -o $@ $^ $(LDFLAGS) $(LDLIBS)
+print_hostname_ip: print_hostname_ip.o
+	$(CXX) -o $@ $^ $(LDFLAGS) $(LDPATH)
 
