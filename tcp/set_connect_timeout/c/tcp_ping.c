@@ -11,6 +11,8 @@
 
 void connect_to(const char *host, const char *serv)
 {
+    printf("connect_to(%s, %s)\n", host, serv);
+
     int             sockfd, n;
     struct addrinfo hints, *res;
 
@@ -24,7 +26,7 @@ void connect_to(const char *host, const char *serv)
         err_quit("Name service failure: %s\n", gai_strerror(n));
 
     sockfd = Socket(res->ai_family, res->ai_socktype, res->ai_protocol);
-    if (connect(sockfd, res->ai_addr, res->ai_addrlen) == 0) {
+    if (connect_nonb(sockfd, res->ai_addr, res->ai_addrlen, 5) == 0) {
         printf("Success: host %s is listening on port %d\n", res->ai_canonname, (int) Sock_port(res->ai_addr, res->ai_addrlen));
     } else {
         err_sys("Network failure");
@@ -35,6 +37,7 @@ void connect_to(const char *host, const char *serv)
     return;
 }
 
+#define DEFAULT_HOST    "www.google.com"
 #define DEFAULT_SERV    "www"
 
 void print_usage(const char *prog) 
@@ -45,7 +48,7 @@ void print_usage(const char *prog)
     puts("");
     puts("optional arguments:");
     puts("\t-h, --help    show this help message and exit");
-    printf("\t--host HOST   hostname that you want to contact\n");
+    printf("\t--host HOST   hostname that you want to contact (default %s)\n", DEFAULT_HOST);
     printf("\t--serv SERV   TCP service name or port number (default %s)\n", DEFAULT_SERV);
 }
 
@@ -88,15 +91,10 @@ void parse_arguments(int argc, char *argv[], const char **host, const char **ser
 
 int main(int argc, char *argv[])
 {
-    const char *host = NULL;
+    const char *host = DEFAULT_HOST;
     const char *serv = DEFAULT_SERV;
 
     parse_arguments(argc, argv, &host, &serv);
-
-    if (host == NULL) {
-        print_usage(argv[0]);
-        exit(1);
-    }
 
     connect_to(host, serv);
 
