@@ -27,7 +27,7 @@ void connect_to(const char *host, const char *serv)
 
     sockfd = Socket(res->ai_family, res->ai_socktype, res->ai_protocol);
     if (connect_nonb(sockfd, res->ai_addr, res->ai_addrlen, 5) == 0) {
-        printf("Success: host %s is listening on port %d\n", res->ai_canonname, (int) Sock_port(res->ai_addr, res->ai_addrlen));
+        printf("Success: host %s is listening on port %d\n", res->ai_canonname, (int) Sock_ntop_port(res->ai_addr, res->ai_addrlen));
     } else {
         err_sys("Network failure");
     }

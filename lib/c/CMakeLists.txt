@@ -14,8 +14,12 @@ add_library(unp
     error.c
     error.h
     unp.h
-    utility.c
-    utility.h
+    sock_ntop.c
+    sock_ntop.h
+    sock_ntop_port.c
+    sock_ntop_port.h
+    wraplib.c
+    wraplib.h
     wrapnetdb.c
     wrapnetdb.h
     wrapsock.c

@@ -6,6 +6,9 @@
 #include <sys/types.h>
 #include <sys/select.h>
 
+void
+Gethostname(char *name, size_t len);
+
 int
 Fcntl(int fd, int cmd, ... /* arg */ );
 

@@ -1,57 +1,9 @@
-#include "utility.h"
+#include "sock_ntop.h"
 #include "error.h"
 
-#include <string.h>
 #include <stdio.h>
 
 static const char *sock_ntop(const struct sockaddr *addr, socklen_t addrlen);
-
-void
-Gethostname(char *name, size_t len)
-{
-    if (gethostname(name, len) < 0)
-        err_sys("gethostname error");
-}
-
-void
-Inet_pton(int family, const char *strptr, void *addrptr)
-{
-    int n;
-
-    if ((n = inet_pton(family, strptr, addrptr)) < 0)
-        err_sys("inet_pton error for %s", strptr);  /* errno set */
-    else if (n == 0)
-        err_quit("inet_pton error for %s", strptr); /* errno not set */
-
-    /* nothing to return */
-}
-
-const char *
-Inet_ntop(int family, const void *addrptr, char *strptr, socklen_t len)
-{
-    const char  *ptr;
-
-    if (strptr == NULL)     /* check for old code */
-        err_quit("NULL 3rd argument to inet_ntop");
-    if ( (ptr = inet_ntop(family, addrptr, strptr, len)) == NULL)
-        err_sys("inet_ntop error");     /* sets errno */
-    return(ptr);
-}
-
-uint16_t
-Sock_port(const struct sockaddr *addr, socklen_t addrlen) 
-{
-    switch (addr->sa_family) {
-    case AF_INET: {
-        struct sockaddr_in *sin = (struct sockaddr_in *) addr;
-        return ntohs(sin->sin_port);
-    }
-
-    default:
-        err_msg("Sock_port: not support AF_xxx: %d, len %d", addr->sa_family, addrlen);
-        return 0;
-    }
-}
 
 const char *
 Sock_ntop(const struct sockaddr *addr, socklen_t addrlen)

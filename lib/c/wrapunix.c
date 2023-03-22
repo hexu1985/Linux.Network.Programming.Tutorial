@@ -4,6 +4,13 @@
 #include <stdarg.h>
 #include <errno.h>
 
+void
+Gethostname(char *name, size_t len)
+{
+    if (gethostname(name, len) < 0)
+        err_sys("gethostname error");
+}
+
 int 
 Fcntl(int fd, int cmd, ...)
 {
