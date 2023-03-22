@@ -9,8 +9,9 @@ add_library(unp
     STATIC 
     blocks.cpp
     blocks.hpp
-    error.cpp
     error.hpp
+    socket_address.cpp
+    socket_address.hpp
     unp.hpp
     utility.cpp
     utility.hpp
@@ -18,4 +19,6 @@ add_library(unp
     wrapnetdb.hpp
     wrapsock.cpp
     wrapsock.hpp
+    wrapunix.cpp
+    wrapunix.hpp
     )

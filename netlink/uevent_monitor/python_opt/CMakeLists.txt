@@ -6,7 +6,6 @@ add_subdirectory(pybind11)
 include_directories(lib)
 
 pybind11_add_module(netlink 
-    lib/error.cpp
     lib/error.hpp
     lib/utility.cpp
     lib/utility.hpp

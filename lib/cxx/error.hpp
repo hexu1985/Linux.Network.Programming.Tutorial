@@ -1,28 +1,31 @@
 #pragma once
 
-#include <cerrno>
-#include <cstring>
-#include <string>
-#include <stdexcept>
-#include <system_error>
-#include <iostream>
+#include <sstream>
+#include "format.hpp"
 
-std::string error_message(const char* file, unsigned int line, const char* format, ...);
+template <typename... Args>
+inline
+std::string format_error_message(const char* file, unsigned int line, 
+        const std::string& format, Args&&... args) {
+    std::ostringstream os;
+    os << "[" << file << ":" << line << "] " << Format(format, args...);
+    return os.str();
+}
 
 #define ThrowRuntimeError(...) \
-    throw std::runtime_error(error_message(__FILE__, __LINE__, __VA_ARGS__))
+    throw std::runtime_error(format_error_message(__FILE__, __LINE__, __VA_ARGS__))
 
 #define ThrowSystemError(...) \
     throw std::system_error(errno, std::system_category(), \
-            error_message(__FILE__, __LINE__, __VA_ARGS__))
+            format_error_message(__FILE__, __LINE__, __VA_ARGS__))
 
 #define ThrowSystemErrorWithCode(error_code, ...) \
     throw std::system_error(error_code, \
-            error_message(__FILE__, __LINE__, __VA_ARGS__))
+            format_error_message(__FILE__, __LINE__, __VA_ARGS__))
 
 #define PrintRuntimeError(...) \
     do { \
-        auto msg = error_message(__FILE__, __LINE__, __VA_ARGS__); \
+        auto msg = format_error_message(__FILE__, __LINE__, __VA_ARGS__); \
         msg += '\n'; \
         std::cerr << msg; \
     } while (false)
@@ -30,7 +33,7 @@ std::string error_message(const char* file, unsigned int line, const char* forma
 #define PrintSystemError(...) \
     do { \
         int errno_save = errno; \
-        auto msg = error_message(__FILE__, __LINE__, __VA_ARGS__); \
+        auto msg = format_error_message(__FILE__, __LINE__, __VA_ARGS__); \
         msg += ": "; \
         msg += strerror(errno_save); \
         msg += '\n'; \

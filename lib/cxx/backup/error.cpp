@@ -16,3 +16,4 @@ std::string error_message(const char* file, unsigned int line, const char* forma
     os << "[" << file << ":" << line << "] " << buf;
     return os.str();
 }
+

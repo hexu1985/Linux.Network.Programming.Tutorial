@@ -68,7 +68,7 @@ std::vector<std::string> Gethostbyname(const std::string& name) {
     std::error_code ec;
     auto addr_list = Gethostbyname(name, ec);
     if (ec) {
-        ThrowSystemErrorWithCode(ec, "Gethostbyname(%s) error", name.c_str());
+        ThrowSystemErrorWithCode(ec, "Gethostbyname('{}') error", name);
     }
     return addr_list;
 }
@@ -140,7 +140,7 @@ std::shared_ptr<struct addrinfo> Getaddrinfo(
     std::error_code ec;
     auto res = Getaddrinfo(node, service, hints, ec);
     if (ec) {
-        ThrowSystemErrorWithCode(ec, "Getaddrinfo(%s, %s) error", node.c_str(), service.c_str());
+        ThrowSystemErrorWithCode(ec, "Getaddrinfo('{}', '{}') error", node, service);
     }
     return res;
 }
@@ -180,7 +180,7 @@ std::vector<SocketAddressInfo> Getaddrinfo(
     std::error_code ec;
     auto info_list = Getaddrinfo(node, service, family, type, protocol, flags, ec);
     if (ec) {
-        ThrowSystemErrorWithCode(ec, "Getaddrinfo(%s, %s) error", node.c_str(), service.c_str());
+        ThrowSystemErrorWithCode(ec, "Getaddrinfo('{}', '{}') error", node, service);
     }
     return info_list;
 }

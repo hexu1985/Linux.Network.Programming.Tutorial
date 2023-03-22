@@ -77,6 +77,6 @@ private:
 template <typename OptValT>
 void Socket::Setsockopt(int level, int optname, const OptValT& optval) {
     if (setsockopt(sockfd, level, optname, &optval, sizeof(OptValT)) < 0)
-        ThrowSystemError("Setsockopt(%d, %d) error", level, optname);
+        ThrowSystemError("Setsockopt({}, {}) error", level, optname);
 }
 

@@ -80,7 +80,7 @@ std::string Sock_ntop(const struct sockaddr *addr, socklen_t addrlen, std::error
 	}
 
     default:
-        PrintRuntimeError("sock_ntop: unknown AF_xxx: %d, len %d", addr->sa_family, addrlen);
+        PrintRuntimeError("sock_ntop: unknown AF_xxx: {}, len {}", addr->sa_family, addrlen);
         ec.assign(EAFNOSUPPORT, std::system_category());
         return "";
     }

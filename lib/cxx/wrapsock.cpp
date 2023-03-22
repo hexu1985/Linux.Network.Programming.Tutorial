@@ -15,7 +15,7 @@
 Socket::Socket(int family_, int type, int protocol): family(family_) {
     sockfd = socket(family, type, protocol);
     if (sockfd < 0) 
-        ThrowSystemError("socket(%d, %d, %d) error", family, type, protocol);
+        ThrowSystemError("socket({}, {}, {}) error", family, type, protocol);
 }
 
 Socket::~Socket() {
@@ -67,7 +67,7 @@ void Socket::Bind(const SocketAddress& sock_addr) {
     auto addrlen = *sock_addr.GetAddrLenPtr();
     if (bind(sockfd, addr, addrlen) < 0) {
         auto addr_str = sock_addr.ToString();
-        ThrowSystemError("bind(%s) error", addr_str.c_str());
+        ThrowSystemError("bind('{}') error", addr_str);
     }
 }
 
@@ -90,7 +90,7 @@ void Socket::Connect(const SocketAddress& sock_addr) {
     Connect(sock_addr, ec);
     if (ec) {
         auto addr_str = sock_addr.ToString();
-        ThrowSystemErrorWithCode(ec, "connect(%s) error", addr_str.c_str());
+        ThrowSystemErrorWithCode(ec, "connect('{}') error", addr_str);
     }
 }
 
@@ -195,8 +195,8 @@ void Socket::RecvAll(void* buf, size_t len) {
         std::error_code ec;
         if ((nread = Recv(ptr, nleft, 0, ec)) <= 0) {
             if (nread == 0) {
-                ThrowRuntimeError("RecvAll() error: was expecting %d bytes but only received"
-                                  " %d bytes before the socket closed", len, len-nleft);
+                ThrowRuntimeError("RecvAll() error: was expecting {} bytes but only received"
+                                  " {} bytes before the socket closed", len, len-nleft);
             } else if(ec == std::errc::interrupted) {
                 nread = 0;
             } else {
@@ -218,7 +218,7 @@ std::string Socket::RecvAll(size_t len) {
 
 void Socket::Shutdown(int how) {
     if (shutdown(sockfd, how) < 0) {
-        ThrowSystemError("shutdown(%d) error", how);
+        ThrowSystemError("shutdown({}) error", how);
     }
 }
 

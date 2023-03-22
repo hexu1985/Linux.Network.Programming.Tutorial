@@ -26,7 +26,7 @@ SocketAddress::SocketAddress(int family) {
 #endif
 
     default:
-        ThrowRuntimeError("SocketAddress(%d) error: unsupport family type", family);
+        ThrowRuntimeError("SocketAddress({}) error: unsupport family type", family);
     }
 }
 
@@ -40,21 +40,21 @@ SocketAddress::SocketAddress(const char* host, uint16_t port, AddressFamily<AF_I
     if (SetIPv4(host, port)) {
         return;
     }
-    ThrowRuntimeError("SocketAddress(%s, %d) error: SetIPv4 failed!", host, port);
+    ThrowRuntimeError("SocketAddress('{}', {}) error: SetIPv4 failed!", host, port);
 }
 
 SocketAddress::SocketAddress(const char* path, AddressFamily<AF_UNIX>) {
     if (SetUNIX(path)) {
         return;
     }
-    ThrowRuntimeError("SocketAddress(%s) error: SetUNIX failed!", path);
+    ThrowRuntimeError("SocketAddress('{}') error: SetUNIX failed!", path);
 }
 
 SocketAddress::SocketAddress(uint32_t groups, uint32_t pid, AddressFamily<AF_NETLINK>) {
     if (SetNetlink(groups, pid)) {
         return;
     }
-    ThrowRuntimeError("SocketAddress(%u, %u) error: SetNetlink failed!", groups, pid);
+    ThrowRuntimeError("SocketAddress({}, {}) error: SetNetlink failed!", groups, pid);
 }
 
 bool SocketAddress::SetIPv4(const char* host, uint16_t port) {
@@ -67,10 +67,10 @@ bool SocketAddress::SetIPv4(const char* host, uint16_t port) {
 
     int n = inet_pton(AF_INET, host, &sin->sin_addr);
     if (n < 0) {
-        PrintSystemError("inet_pton(%s) error", host);
+        PrintSystemError("inet_pton('{}') error", host);
         return false;
     } else if (n == 0) {
-        PrintRuntimeError("inet_pton(%s) error: Not in presentation format", host);
+        PrintRuntimeError("inet_pton('{}') error: Not in presentation format", host);
         return false;
     }
 
@@ -86,7 +86,7 @@ bool SocketAddress::SetUNIX(const char* path) {
     memset(sun.get(), 0x0, sizeof(struct sockaddr_un));
     sun->sun_family = AF_UNIX;
     if (strlen(path) >= sizeof(sun->sun_path)) {
-        PrintRuntimeError("SetUNIX error: path [%s] is too long", path);
+        PrintRuntimeError("SetUNIX error: path [{}] is too long", path);
         return false;
     }
     strcpy(sun->sun_path, path);
@@ -124,7 +124,7 @@ std::string SocketAddress::IPAddress() const {
     }
 
     default:
-        PrintRuntimeError("SocketAddress::IPAddress: unsupported AF_xxx: %d, len %d", GetAddrPtr()->sa_family, addrlen);
+        PrintRuntimeError("SocketAddress::IPAddress: unsupported AF_xxx: {}, len {}", GetAddrPtr()->sa_family, addrlen);
         return "";
     }
     return "";
@@ -146,7 +146,7 @@ int SocketAddress::IPPort() const {
     }
 
     default:
-        PrintRuntimeError("SocketAddress::IPPort: unsupported AF_xxx: %d, len %d", GetAddrPtr()->sa_family, addrlen);
+        PrintRuntimeError("SocketAddress::IPPort: unsupported AF_xxx: {}, len {}", GetAddrPtr()->sa_family, addrlen);
         return -1;
     }
     return -1;
