@@ -20,6 +20,7 @@ public:
     ~SocketAddress() = default;
 
     SocketAddress(int family);
+    SocketAddress(const struct sockaddr* addr, socklen_t addrlen);
     SocketAddress(const char* host, uint16_t port, AddressFamily<AF_INET> family=AddressFamily<AF_INET>{});
     SocketAddress(const char* path, AddressFamily<AF_UNIX> family=AddressFamily<AF_UNIX>{});
     SocketAddress(uint32_t groups, uint32_t pid, AddressFamily<AF_NETLINK> family=AddressFamily<AF_NETLINK>{});
@@ -41,6 +42,9 @@ public:
     const socklen_t* GetAddrLenPtr() const { return &addrlen; }
 
     std::string ToString() const;
+
+    std::string IPAddress() const;
+    int IPPort() const;
 
 private:
     std::unique_ptr<char[]> addr;

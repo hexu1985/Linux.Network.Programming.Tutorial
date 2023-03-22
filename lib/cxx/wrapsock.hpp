@@ -31,6 +31,7 @@ public:
 
     void Close();
 
+    void Connect(const SocketAddress& sock_addr, std::error_code& ec);
     void Connect(const SocketAddress& sock_addr);
 
     int GetDescriptor() { return sockfd; }

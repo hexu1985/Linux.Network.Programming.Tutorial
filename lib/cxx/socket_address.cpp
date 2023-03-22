@@ -30,6 +30,12 @@ SocketAddress::SocketAddress(int family) {
     }
 }
 
+SocketAddress::SocketAddress(const struct sockaddr* addr_, socklen_t addrlen_) {
+    addr.reset(new char[addrlen_]);
+    memcpy(addr.get(), addr_, addrlen_);
+    addrlen = addrlen_;
+}
+
 SocketAddress::SocketAddress(const char* host, uint16_t port, AddressFamily<AF_INET>) {
     if (SetIPv4(host, port)) {
         return;
@@ -102,9 +108,53 @@ bool SocketAddress::SetNetlink(uint32_t groups, uint32_t pid) {
     return true;
 }
 
+std::string SocketAddress::IPAddress() const {
+    if (addr == nullptr)
+        return "";
+
+    switch (GetAddrPtr()->sa_family) {
+    case AF_INET: {
+        struct sockaddr_in *sin = (struct sockaddr_in *) GetAddrPtr();
+        return Inet_ntop(AF_INET, &sin->sin_addr);
+    }
+
+    case AF_INET6: {
+        struct sockaddr_in6 *sin6 = (struct sockaddr_in6 *) GetAddrPtr();
+        return Inet_ntop(AF_INET6, &sin6->sin6_addr);
+    }
+
+    default:
+        PrintRuntimeError("SocketAddress::IPAddress: unsupported AF_xxx: %d, len %d", GetAddrPtr()->sa_family, addrlen);
+        return "";
+    }
+    return "";
+}
+
+int SocketAddress::IPPort() const {
+    if (addr == nullptr)
+        return -1;
+
+    switch (GetAddrPtr()->sa_family) {
+    case AF_INET: {
+        struct sockaddr_in *sin = (struct sockaddr_in *) GetAddrPtr();
+        return ntohs(sin->sin_port);
+    }
+
+    case AF_INET6: {
+        struct sockaddr_in6 *sin6 = (struct sockaddr_in6 *) GetAddrPtr();
+        return ntohs(sin6->sin6_port);
+    }
+
+    default:
+        PrintRuntimeError("SocketAddress::IPPort: unsupported AF_xxx: %d, len %d", GetAddrPtr()->sa_family, addrlen);
+        return -1;
+    }
+    return -1;
+}
+
 std::string SocketAddress::ToString() const {
     if (addr == nullptr)
-        ThrowRuntimeError("ToString() error: addr is nullptr", "");
+        return "";
 
     return Sock_ntop((const struct sockaddr *) addr.get(), addrlen);
 }

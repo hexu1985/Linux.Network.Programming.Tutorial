@@ -9,6 +9,8 @@
 #include <memory>
 #include <tuple>
 
+#include "socket_address.hpp"
+
 enum class hostent_errc {
     success = 0,
     unknown_host = HOST_NOT_FOUND,
@@ -61,18 +63,8 @@ struct SocketAddressInfo {
     int type;
     int protocol;
     std::string canon_name;
-    std::tuple<std::string, int> address;
+    SocketAddress address;
 };
-
-inline
-std::string get_ip(const SocketAddressInfo& info) {
-    return std::get<0>(info.address);
-}
-
-inline
-int get_port(const SocketAddressInfo& info) {
-    return std::get<1>(info.address);
-}
 
 std::vector<SocketAddressInfo> Getaddrinfo(
         const std::string& node, const std::string& service,

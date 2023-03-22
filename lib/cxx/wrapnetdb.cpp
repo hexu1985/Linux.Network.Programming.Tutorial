@@ -168,10 +168,7 @@ std::vector<SocketAddressInfo> Getaddrinfo(
         info.type = res->ai_socktype;
         info.protocol = res->ai_protocol;
         info.canon_name = res->ai_canonname ? res->ai_canonname : "";
-        info.address = Sock_inX_ntop(res->ai_addr, res->ai_addrlen, ec);
-        if (ec) {
-            return {};
-        }
+        info.address = SocketAddress(res->ai_addr, res->ai_addrlen);
         info_list.push_back(std::move(info));
     }
     return info_list;

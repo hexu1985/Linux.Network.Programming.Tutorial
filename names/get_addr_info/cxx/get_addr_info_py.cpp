@@ -10,8 +10,7 @@ void get_addr_info_list(const std::string& remote_host)
 
     int counter = 0;
     for (const auto& item : result) {
-        std::cout << std::left << std::setw(2) << counter 
-            << get_ip(item) << '\n';
+        std::cout << std::left << std::setw(2) << counter << item.address << '\n';
         counter++;
     }
 }

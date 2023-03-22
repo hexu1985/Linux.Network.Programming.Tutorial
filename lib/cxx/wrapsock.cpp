@@ -77,12 +77,20 @@ void Socket::Close() {
     sockfd = -1;
 }
 
-void Socket::Connect(const SocketAddress& sock_addr) {
+void Socket::Connect(const SocketAddress& sock_addr, std::error_code& ec) {
     auto addr = sock_addr.GetAddrPtr();
     auto addrlen = *sock_addr.GetAddrLenPtr();
     if (connect(sockfd, addr, addrlen) < 0) {
+        ec.assign(errno, std::system_category());
+    }
+}
+
+void Socket::Connect(const SocketAddress& sock_addr) {
+    std::error_code ec;
+    Connect(sock_addr, ec);
+    if (ec) {
         auto addr_str = sock_addr.ToString();
-        ThrowSystemError("connect(%s) error", addr_str.c_str());
+        ThrowSystemErrorWithCode(ec, "connect(%s) error", addr_str.c_str());
     }
 }
 
