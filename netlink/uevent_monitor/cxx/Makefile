@@ -20,6 +20,6 @@ clean:
 %.o:%.cpp
 	$(CXX) -o $@ -c $< $(CXXFLAGS) $(INCLUDE)
 
-uevent_monitor: uevent_monitor.o wrapsock.o socket_address.o utility.o
+uevent_monitor: uevent_monitor.o wrapsock.o socket_address.o sock_ntop.o wraplib.o
 	$(CXX) -o $@ $^ $(LDFLAGS) $(LDLIBS)
 

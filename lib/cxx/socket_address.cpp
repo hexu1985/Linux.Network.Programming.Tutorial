@@ -1,6 +1,7 @@
 #include "socket_address.hpp"
 #include "error.hpp"
-#include "utility.hpp"
+#include "wraplib.hpp"
+#include "sock_ntop.hpp"
 
 #include <unistd.h>
 #include <errno.h>

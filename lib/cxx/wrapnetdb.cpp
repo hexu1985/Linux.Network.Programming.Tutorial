@@ -1,6 +1,5 @@
 #include "wrapnetdb.hpp"
 #include "error.hpp"
-#include "utility.hpp"
 
 #include <cassert>
 #include <arpa/inet.h>

@@ -1,6 +1,5 @@
 #include "wrapsock.hpp"
 #include "error.hpp"
-#include "utility.hpp"
 
 #include <sys/socket.h>
 #include <unistd.h>
