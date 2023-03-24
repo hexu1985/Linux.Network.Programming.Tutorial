@@ -34,6 +34,9 @@ public:
     void Connect(const SocketAddress& sock_addr, std::error_code& ec);
     void Connect(const SocketAddress& sock_addr);
 
+    void Connect(const SocketAddress& sock_addr, double timeout_sec, std::error_code& ec);
+    void Connect(const SocketAddress& sock_addr, double timeout_sec);
+
     int GetDescriptor() { return sockfd; }
     int GetFamily() { return family; }
 
@@ -59,6 +62,9 @@ public:
     template <typename OptValT>
     void Setsockopt(int level, int optname, const OptValT& optval);
 
+    template <typename OptValT>
+    socklen_t Getsockopt(int level, int optname, OptValT* optval);
+
     void Shutdown(int how);
 
     int SendTo(const void* buf, size_t len, int flags, const SocketAddress& dest_addr, std::error_code& ec);
@@ -69,6 +75,9 @@ public:
     int RecvFrom(void* buf, size_t len, SocketAddress& src_addr);
     std::tuple<std::string, SocketAddress> RecvFrom(size_t len);
 
+    int Fileno() const;
+    int Family() const;
+
 private:
     int sockfd = -1;
     int family = -1;
@@ -78,5 +87,13 @@ template <typename OptValT>
 void Socket::Setsockopt(int level, int optname, const OptValT& optval) {
     if (setsockopt(sockfd, level, optname, &optval, sizeof(OptValT)) < 0)
         ThrowSystemError("Setsockopt({}, {}) error", level, optname);
+}
+
+template <typename OptValT>
+socklen_t Socket::Getsockopt(int level, int optname, OptValT* optval) {
+    socklen_t len = sizeof(OptValT);
+    if (getsockopt(sockfd, level, optname, optval, &len) < 0)
+        ThrowSystemError("Getsockopt({}, {}) error", level, optname);
+    return len;
 }
 

@@ -12,7 +12,6 @@ Gethostname(char *name, size_t len);
 int
 Fcntl(int fd, int cmd, ... /* arg */ );
 
-
 int
 Select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, 
         struct timeval *timeout);

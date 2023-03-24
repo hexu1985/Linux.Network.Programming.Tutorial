@@ -1,5 +1,4 @@
 #include "wrapsock.hpp"
-#include "error.hpp"
 
 #include <sys/socket.h>
 #include <unistd.h>
@@ -10,6 +9,9 @@
 
 #include <utility>
 #include <sstream>
+
+#include "error.hpp"
+#include "wrapunix.hpp"
 
 Socket::Socket(int family_, int type, int protocol): family(family_) {
     sockfd = socket(family, type, protocol);
@@ -46,14 +48,10 @@ std::tuple<Socket, SocketAddress> Socket::Accept() {
     int n;
 again:
     if ((n = accept(sockfd, addr, addrlen)) < 0) {
-#ifdef	EPROTO
         if (errno == EPROTO || errno == ECONNABORTED)
-#else
-            if (errno == ECONNABORTED)
-#endif
-                goto again;
-            else
-                ThrowSystemError("accept() error");
+            goto again;
+        else
+            ThrowSystemError("accept() error");
     }
     Socket sock;
     sock.family = family;
@@ -65,8 +63,7 @@ void Socket::Bind(const SocketAddress& sock_addr) {
     auto addr = sock_addr.GetAddrPtr();
     auto addrlen = *sock_addr.GetAddrLenPtr();
     if (bind(sockfd, addr, addrlen) < 0) {
-        auto addr_str = sock_addr.ToString();
-        ThrowSystemError("bind('{}') error", addr_str);
+        ThrowSystemError("bind('{}') error", sock_addr.ToString());
     }
 }
 
@@ -88,8 +85,68 @@ void Socket::Connect(const SocketAddress& sock_addr) {
     std::error_code ec;
     Connect(sock_addr, ec);
     if (ec) {
-        auto addr_str = sock_addr.ToString();
-        ThrowSystemErrorWithCode(ec, "connect('{}') error", addr_str);
+        ThrowSystemErrorWithCode(ec, "connect('{}') error", sock_addr.ToString());
+    }
+}
+
+namespace {
+
+class ScopedFcntl {
+private:
+    int fd;
+    int save_flags;
+
+public:
+    ScopedFcntl(int fd_, int flags) {
+        fd = fd_;
+        save_flags = Fcntl(fd, F_GETFL, 0);
+        Fcntl(fd, F_SETFL, save_flags | flags);
+    }
+
+    ~ScopedFcntl() {
+        fcntl(fd, F_SETFL, save_flags);	/* restore file status flags */
+    }
+};
+
+} // namespace
+
+void Socket::Connect(const SocketAddress& sock_addr, double timeout_sec) {
+    ScopedFcntl fcntl_guard(sockfd, O_NONBLOCK);
+
+    int n;
+    auto addr = sock_addr.GetAddrPtr();
+    auto addrlen = *sock_addr.GetAddrLenPtr();
+    if ((n = connect(sockfd, addr, addrlen)) < 0) {
+        if (errno != EINPROGRESS) {
+            ThrowSystemError("connect('{}') error", sock_addr.ToString());
+        }
+    }
+
+    /* Do whatever we want while the connect is taking place. */
+
+    if (n == 0) {
+        return;	/* connect completed immediately */
+    }
+
+    std::vector<int> readfds, writefds, exceptfds;
+    readfds.push_back(sockfd);
+    writefds.push_back(sockfd);
+
+    std::error_code ec;
+    std::tie(readfds, writefds, exceptfds) = Select(readfds, writefds, exceptfds, std::chrono::duration<double>(timeout_sec), ec);
+    if (ec) {
+        ThrowSystemErrorWithCode(ec, "connect('{}') error", sock_addr.ToString());
+    }
+
+    if (!readfds.empty() || !writefds.empty()) {
+        int error;
+        Getsockopt(SOL_SOCKET, SO_ERROR, &error);
+        if (error) {
+            ec.assign(error, std::system_category());
+            ThrowSystemErrorWithCode(ec, "connect('{}') error", sock_addr.ToString());
+        }
+    } else {
+        ThrowRuntimeError("select error: sockfd not set");
     }
 }
 
@@ -270,3 +327,10 @@ std::tuple<std::string, SocketAddress> Socket::RecvFrom(size_t len) {
     return std::tuple<std::string, SocketAddress>(std::move(buf), std::move(src_addr));
 }
 
+int Socket::Fileno() const {
+    return sockfd;
+}
+
+int Socket::Family() const {
+    return family;
+}

@@ -146,8 +146,7 @@ std::shared_ptr<struct addrinfo> Getaddrinfo(
 
 std::vector<SocketAddressInfo> Getaddrinfo(
         const std::string& node, const std::string& service,
-        int family, int type, int protocol, int flags,
-        std::error_code& ec) {
+        int family, int type, int protocol, int flags) {
     struct addrinfo hints;
     memset(&hints, 0, sizeof(hints));
     hints.ai_flags = flags;
@@ -155,11 +154,7 @@ std::vector<SocketAddressInfo> Getaddrinfo(
     hints.ai_socktype = type;
     hints.ai_protocol = protocol;
 
-    auto ressave = Getaddrinfo(node, service, &hints, ec);
-    if (ec) {
-        return {};
-    }
-
+    auto ressave = Getaddrinfo(node, service, &hints);
     std::vector<SocketAddressInfo> info_list;
     for (auto res = ressave.get(); res; res = res->ai_next) {
         SocketAddressInfo info;
@@ -169,17 +164,6 @@ std::vector<SocketAddressInfo> Getaddrinfo(
         info.canon_name = res->ai_canonname ? res->ai_canonname : "";
         info.address = SocketAddress(res->ai_addr, res->ai_addrlen);
         info_list.push_back(std::move(info));
-    }
-    return info_list;
-}
-
-std::vector<SocketAddressInfo> Getaddrinfo(
-        const std::string& node, const std::string& service,
-        int family, int type, int protocol, int flags) {
-    std::error_code ec;
-    auto info_list = Getaddrinfo(node, service, family, type, protocol, flags, ec);
-    if (ec) {
-        ThrowSystemErrorWithCode(ec, "Getaddrinfo('{}', '{}') error", node, service);
     }
     return info_list;
 }

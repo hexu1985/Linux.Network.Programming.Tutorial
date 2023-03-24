@@ -67,11 +67,6 @@ struct SocketAddressInfo {
 };
 
 std::vector<SocketAddressInfo> Getaddrinfo(
-        const std::string& node, const std::string& service,
-        int family, int type, int protocol, int flags,
-        std::error_code& ec);
-
-std::vector<SocketAddressInfo> Getaddrinfo(
         const std::string& node, const std::string& service="",
         int family=0, int type=0, int protocol=0, int flags=0);
 
