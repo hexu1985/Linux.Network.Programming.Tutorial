@@ -10,7 +10,6 @@ def client(host, port):
     # Connect the socket to the server
     sock.connect((host, port))
     
-    # Send data
     try:
         # Look for the response
         while True:
