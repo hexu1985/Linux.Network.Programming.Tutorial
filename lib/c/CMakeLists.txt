@@ -26,4 +26,8 @@ add_library(unp
     wrapsock.h
     wrapunix.c
     wrapunix.h
+    wrapstdio.c
+    wrapstdio.h
+    readline.c
+    readline.h
     )

@@ -9,3 +9,5 @@
 #include "sock_ntop_port.h"
 #include "connect_nonb.h"
 #include "blocks.h"
+#include "wrapstdio.h"
+#include "readline.h"

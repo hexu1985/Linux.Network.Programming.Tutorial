@@ -3,7 +3,8 @@ CFLAGS = -g3 -Wall -Wextra -Werror
 #AR = ar
 #ARFLAGS = rv
 
-OBJECTS = blocks.o error.o wraplib.o wrapnetdb.o wrapsock.o wrapunix.o sock_ntop.o sock_ntop_port.o connect_nonb.o
+OBJECTS = blocks.o error.o wraplib.o wrapnetdb.o wrapsock.o wrapunix.o sock_ntop.o sock_ntop_port.o connect_nonb.o wrapstdio.o \
+		  readline.o
 TARGET = libunp.a
 
 all: $(TARGET)
