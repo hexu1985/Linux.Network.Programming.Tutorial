@@ -12,7 +12,7 @@ std::string GetBlock(Socket& sock) {
 void PutBlock(Socket& sock, const std::string& message) {
     uint32_t block_length = message.length();
     block_length = htonl(block_length);
-    sock.Send(&block_length, sizeof(block_length));
-    sock.Send(message.data(), message.length());
+    sock.SendAll(&block_length, sizeof(block_length));
+    sock.SendAll(message);
 }
 
