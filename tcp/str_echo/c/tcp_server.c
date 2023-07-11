@@ -29,7 +29,7 @@ void server(const char *interface, uint16_t port)
 
     Bind(listenfd, (struct sockaddr*) &servaddr, sizeof(servaddr));
 
-    Listen(listenfd, 5);
+    Listen(listenfd, 1);
 
     len = sizeof(myaddr);
     Getsockname(listenfd, (struct sockaddr *) &myaddr, &len);

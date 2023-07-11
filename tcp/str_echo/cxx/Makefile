@@ -22,5 +22,5 @@ clean:
 tcp_echo_client: tcp_client.o str_cli.o
 	$(CXX) -o $@ $^ $(LDFLAGS) $(LDPATH)
 
-tcp_echo_server: tcp_server.o
+tcp_echo_server: tcp_server.o str_echo.o
 	$(CXX) -o $@ $^ $(LDFLAGS) $(LDPATH)

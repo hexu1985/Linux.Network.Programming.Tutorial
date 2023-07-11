@@ -4,6 +4,7 @@
 #include <gflags/gflags.h>
 
 #include "unp.hpp"
+#include "str_echo.hpp"
 
 void server(const char *host, uint16_t port) {
     Socket sock(AF_INET, SOCK_STREAM);
@@ -23,11 +24,9 @@ void server(const char *host, uint16_t port) {
         std::cout << "We have accepted a connection from " << sockname << std::endl;
         std::cout << "  Socket name: " << sc.Getsockname() << std::endl;
         std::cout << "  Socket peer: " << sc.Getpeername() << std::endl; 
-        auto message = sc.RecvAll(16);
-        std::cout << "  Incoming sixteen-octet message: " << message << std::endl;
-        sc.SendAll("Farewell, client");
+
+        str_echo(sc);
         sc.Close();
-        std::cout << "  Reply sent, socket closed" << std::endl;
     }
 }
 

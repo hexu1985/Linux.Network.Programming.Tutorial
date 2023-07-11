@@ -13,12 +13,17 @@ add_library(unp
     socket_address.cpp
     socket_address.hpp
     unp.hpp
-    utility.cpp
-    utility.hpp
+    wraplib.cpp
+    wraplib.hpp
     wrapnetdb.cpp
     wrapnetdb.hpp
     wrapsock.cpp
     wrapsock.hpp
     wrapunix.cpp
     wrapunix.hpp
+    format.hpp
+    read_buffer.cpp
+    read_buffer.hpp
+    sock_ntop.cpp
+    sock_ntop.hpp
     )
