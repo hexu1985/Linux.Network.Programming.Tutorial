@@ -8,3 +8,4 @@
 #include "wraplib.hpp"
 #include "blocks.hpp"
 #include "read_buffer.hpp"
+#include "socket_istream.hpp"
