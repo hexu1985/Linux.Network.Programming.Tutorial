@@ -1,9 +1,9 @@
 # Makefile
 
 CXX = g++
-CXXFLAGS = -g3 -Wall -Wextra -Werror
+CXXFLAGS = -g3 -Wall -Wextra -Werror -fsanitize=address -fno-omit-frame-pointer
 INCLUDE = -I./lib
-LDFLAGS = -lgflags -lunp
+LDFLAGS = -lasan -lgflags -lunp 
 LDPATH = -L./lib
 
 PROGS =	tcp_echo_client tcp_echo_server

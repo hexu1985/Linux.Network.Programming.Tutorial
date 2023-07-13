@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <string>
 #include <memory>
+#include "malloc_deleter.hpp"
 
 template <int I>
 struct AddressFamily {
@@ -47,7 +48,10 @@ public:
     int IPPort() const;
 
 private:
-    std::unique_ptr<char[]> addr;
+    template <typename T> 
+    using AddrPtrType = std::unique_ptr<T, malloc_deleter<T>>;
+
+    AddrPtrType<char> addr;
     socklen_t addrlen = 0;
 };
 

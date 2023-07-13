@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <errno.h>
 
+#include <cstdlib>
 #include <cstring>
 #include <cassert>
 
@@ -15,13 +16,13 @@
 SocketAddress::SocketAddress(int family) {
     switch (family) {
     case AF_INET:
-        addr.reset(reinterpret_cast<char *>(new struct sockaddr_in));
+        addr.reset(malloc_helper<char, struct sockaddr_in>());
         addrlen = sizeof(struct sockaddr_in);
         break;
 
 #ifdef	AF_UNIX
     case AF_UNIX:
-        addr.reset(reinterpret_cast<char *>(new struct sockaddr_un));
+        addr.reset(malloc_helper<char, struct sockaddr_un>());
         addrlen = sizeof(struct sockaddr_un);
         break;
 #endif
@@ -32,7 +33,7 @@ SocketAddress::SocketAddress(int family) {
 }
 
 SocketAddress::SocketAddress(const struct sockaddr* addr_, socklen_t addrlen_) {
-    addr.reset(new char[addrlen_]);
+    addr.reset(malloc_helper<char>(addrlen_));
     memcpy(addr.get(), addr_, addrlen_);
     addrlen = addrlen_;
 }
@@ -61,7 +62,7 @@ SocketAddress::SocketAddress(uint32_t groups, uint32_t pid, AddressFamily<AF_NET
 bool SocketAddress::SetIPv4(const char* host, uint16_t port) {
     if (host == nullptr || host[0] == '\0') host = "0.0.0.0";
 
-    std::unique_ptr<struct sockaddr_in> sin(new struct sockaddr_in);
+    AddrPtrType<struct sockaddr_in> sin(malloc_helper<struct sockaddr_in>());
     memset(sin.get(), 0x0, sizeof(struct sockaddr_in));
     sin->sin_family = AF_INET;
     sin->sin_port = htons(port);
@@ -83,7 +84,7 @@ bool SocketAddress::SetIPv4(const char* host, uint16_t port) {
 bool SocketAddress::SetUNIX(const char* path) {
     if (path == nullptr || path[0] == '\0') return false;
 
-    std::unique_ptr<struct sockaddr_un> sun(new struct sockaddr_un);
+    AddrPtrType<struct sockaddr_un> sun(malloc_helper<struct sockaddr_un>());
     memset(sun.get(), 0x0, sizeof(struct sockaddr_un));
     sun->sun_family = AF_UNIX;
     if (strlen(path) >= sizeof(sun->sun_path)) {
@@ -98,7 +99,7 @@ bool SocketAddress::SetUNIX(const char* path) {
 }
 
 bool SocketAddress::SetNetlink(uint32_t groups, uint32_t pid) {
-    std::unique_ptr<struct sockaddr_nl> snl(new struct sockaddr_nl);
+    AddrPtrType<struct sockaddr_nl> snl(malloc_helper<struct sockaddr_nl>());
     memset(snl.get(), 0x0, sizeof(struct sockaddr_nl));
     snl->nl_family = AF_NETLINK;
     snl->nl_groups = groups;
