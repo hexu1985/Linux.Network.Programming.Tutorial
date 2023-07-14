@@ -14,3 +14,11 @@ public:
         free(ptr);
     }
 };
+
+template <typename T>
+class malloc_deleter<T[]> {
+public:
+    void operator()(T* ptr) const {
+        free(ptr);
+    }
+};

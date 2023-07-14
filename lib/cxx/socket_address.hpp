@@ -51,7 +51,7 @@ private:
     template <typename T> 
     using AddrPtrType = std::unique_ptr<T, malloc_deleter<T>>;
 
-    AddrPtrType<char> addr;
+    AddrPtrType<char[]> addr;
     socklen_t addrlen = 0;
 };
 
