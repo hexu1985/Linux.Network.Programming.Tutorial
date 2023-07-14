@@ -6,7 +6,7 @@ INCLUDE = -I./lib
 LDFLAGS = -lasan -lgflags -lunp 
 LDPATH = -L./lib
 
-PROGS =	tcp_echo_client tcp_echo_server
+PROGS =	tcp_echo_client tcp_echo_server tcp_echo_client_istream
 
 .PHONY: all
 all: $(PROGS)
@@ -24,3 +24,7 @@ tcp_echo_client: tcp_client.o str_cli.o
 
 tcp_echo_server: tcp_server.o str_echo.o
 	$(CXX) -o $@ $^ $(LDFLAGS) $(LDPATH)
+
+tcp_echo_client_istream: tcp_client.o str_cli_istream.o
+	$(CXX) -o $@ $^ $(LDFLAGS) $(LDPATH)
+
