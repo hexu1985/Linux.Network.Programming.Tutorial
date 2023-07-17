@@ -2,9 +2,9 @@
 
 #include <cstdlib>
 
-template <typename To, typename From=To>
-To* malloc_helper(int n=1) {
-    return reinterpret_cast<To*>(malloc(sizeof(From)*n));
+inline
+char* malloc_wrapper(size_t size) {
+    return static_cast<char*>(malloc(size));
 }
 
 template <typename T>
